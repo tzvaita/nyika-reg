@@ -84,21 +84,14 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# A single database, taken entirely from DATABASE_URL (Render provides it).
+#
+# The Rails 8 default declares four production databases — primary, cache, queue
+# and cable — for Solid Cache/Queue/Cable. Those are not used here: this app has
+# no config/cache.yml, config/queue.yml or db/cache_schema.rb, because the
+# generators that create them never ran. Declaring them anyway made `db:prepare`
+# try to prepare three databases that DATABASE_URL does not cover, and it fell
+# back to a local Unix socket that does not exist in the container.
 production:
-  primary: &primary_production
-    <<: *default
-    database: nyika_registry_production
-    username: nyika_registry
-    password: <%= ENV["NYIKA_REGISTRY_DATABASE_PASSWORD"] %>
-  cache:
-    <<: *primary_production
-    database: nyika_registry_production_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: nyika_registry_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: nyika_registry_production_cable
-    migrations_paths: db/cable_migrate
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

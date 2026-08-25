@@ -4,12 +4,16 @@
 # NEVER put real household data in this file. Seeds are committed to the
 # repository; resident data is not.
 
-unless Rails.env.development? || Rails.env.test?
-  abort "Refusing to seed outside development/test."
-end
-
-# Development-only password. Override with SEED_PASSWORD in .env.
-password = ENV.fetch("SEED_PASSWORD", "nyika-dev-password")
+# Demo accounts exist in the hosted POC too, so seeding is allowed in production —
+# but only with an explicitly supplied password. The fallback below is committed to
+# a public repository, so it must never be what protects a deployed instance.
+password =
+  if Rails.env.development? || Rails.env.test?
+    ENV.fetch("SEED_PASSWORD", "nyika-dev-password")
+  else
+    ENV["SEED_PASSWORD"].presence ||
+      abort("Refusing to seed #{Rails.env}: set SEED_PASSWORD to a private value first.")
+  end
 
 demo_users = [
   { email: "registrar@nyika.local",  name: "Rudo Registrar",   role: :registrar },
