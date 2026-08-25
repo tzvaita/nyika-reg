@@ -26,7 +26,9 @@ demo_users.each do |attrs|
   user = User.find_or_initialize_by(email: attrs[:email])
   user.name = attrs[:name]
   user.role = attrs[:role]
-  user.password = password if user.new_record?
+  # Always set the password, not just on create. These are demo accounts, so
+  # rotating SEED_PASSWORD and redeploying should actually change how you sign in.
+  user.password = password
   user.save!
   puts "  #{user.role.ljust(18)} #{user.email}"
 end

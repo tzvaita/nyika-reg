@@ -1,8 +1,12 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
+# If running the rails server then create or migrate existing database.
+# db:seed runs separately and unconditionally: db:prepare only seeds when it
+# CREATES the database, so a database that already exists would never get the
+# demo users. The seeds are idempotent, so running them on every boot is safe.
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+  ./bin/rails db:seed
 fi
 
 exec "${@}"
