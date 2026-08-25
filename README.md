@@ -68,6 +68,31 @@ Without it the admin screens render unstyled. The Tailwind source lives in
 `app/assets/tailwind/`, which is excluded from the asset load path so Propshaft
 serves the compiled file instead of the raw `@import`.
 
+## Deploying
+
+`render.yaml` is a Render blueprint: **New -> Blueprint -> pick this repository**.
+It provisions a free web service (built from the `Dockerfile`) and a free Postgres.
+
+Two values must be set by hand in the Render dashboard — neither is in the repo:
+
+| variable | where it comes from |
+|---|---|
+| `RAILS_MASTER_KEY` | the contents of your local `config/master.key` |
+| `SEED_PASSWORD` | choose one. **Required:** this repository is public, so the fallback in `db/seeds.rb` is readable by anyone |
+
+The database is prepared automatically on first boot: `bin/docker-entrypoint` runs
+`rails db:prepare`, which loads the schema and runs the seeds when the database is
+new, then only runs pending migrations on later deploys.
+
+The `Dockerfile` installs Node **in the build stage only**, to compile
+ActiveAdmin's Tailwind CSS. The runtime image ships the compiled stylesheet and no
+JavaScript toolchain. Without that step the admin screens raise
+`Propshaft::MissingAssetError` in production.
+
+Free-tier caveats worth knowing before sharing a link: the web service sleeps after
+inactivity, so the first request can take the better part of a minute, and free
+Postgres instances expire after a limited period. Check Render's current terms.
+
 ## Notes
 
 - Ruby and Node are managed with asdf; both are pinned in `.tool-versions`.

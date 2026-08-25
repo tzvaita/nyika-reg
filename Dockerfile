@@ -7,8 +7,18 @@
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version
+# Make sure RUBY_VERSION matches the Ruby version in .ruby-version,
+# and NODE_VERSION the Node version in .tool-versions.
+# Both ARGs are declared before any FROM so they are global to every stage.
 ARG RUBY_VERSION=3.3.8
+ARG NODE_VERSION=22.15.0
+
+# Node is needed at BUILD time only. ActiveAdmin 4 styles itself with Tailwind v4
+# through an npm plugin and ships no precompiled CSS, so app/assets/builds/active_admin.css
+# has to be generated during the build. Without it the admin screens raise
+# Propshaft::MissingAssetError in production.
+FROM docker.io/library/node:$NODE_VERSION-bookworm-slim AS node
+
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
@@ -35,6 +45,16 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev libvips libyaml-dev pkg-config && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Node binaries, copied from the node stage. These stay in the throw-away build
+# stage: the runtime image ships the compiled CSS, not a JavaScript toolchain.
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+
+# Install JavaScript dependencies (Tailwind + the ActiveAdmin plugin)
+COPY package.json package-lock.json ./
+RUN npm ci
+
 # Install application gems
 COPY vendor/* ./vendor/
 COPY Gemfile Gemfile.lock ./
@@ -50,6 +70,10 @@ COPY . .
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
+
+# Compile ActiveAdmin's Tailwind stylesheet. Must run BEFORE assets:precompile,
+# which only fingerprints files that already exist on disk.
+RUN npm run build:css
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
