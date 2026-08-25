@@ -73,6 +73,12 @@ serves the compiled file instead of the raw `@import`.
 `render.yaml` is a Render blueprint: **New -> Blueprint -> pick this repository**.
 It provisions a free web service (built from the `Dockerfile`) and a free Postgres.
 
+Neither declares a region, so both take Render's default and are guaranteed to
+match. That matters: Render's internal database hostname resolves only within a
+single region, and a mismatch fails at boot with
+`PG::ConnectionBad: could not translate host name "dpg-..."`. If you pin a region,
+pin it on both.
+
 Two values must be set by hand in the Render dashboard — neither is in the repo:
 
 | variable | where it comes from |

@@ -13,23 +13,22 @@
 # bin/docker-entrypoint runs `rails db:prepare`, which loads the schema and runs
 # db/seeds.rb when the database is new. Later deploys only run pending migrations.
 
-# IMPORTANT: the database and the web service MUST declare the same region.
-# Render's internal hostname (dpg-...-a) only resolves within one region; across
-# regions the app fails to boot with
+# No region is declared anywhere in this file, deliberately. Both resources take
+# Render's default region and therefore always match. Render's internal hostname
+# (dpg-...-a) only resolves within a single region; a mismatch fails at boot with
 #   PG::ConnectionBad: could not translate host name "dpg-..." to address
+# If you ever pin a region, you must pin it on BOTH the database and the service.
 databases:
   - name: nyika-registry-db
     databaseName: nyika_registry
     user: nyika
     plan: free
-    region: frankfurt
 
 services:
   - type: web
     name: nyika-registry
     runtime: docker
     plan: free
-    region: frankfurt   # must match the database's region above
     healthCheckPath: /up
     envVars:
       - key: DATABASE_URL
