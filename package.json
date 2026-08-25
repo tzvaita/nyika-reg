@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@activeadmin/activeadmin": "^4.0.0-beta22",
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  },
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i app/assets/tailwind/active_admin.css -o app/assets/builds/active_admin.css --minify"
+  }
+}
