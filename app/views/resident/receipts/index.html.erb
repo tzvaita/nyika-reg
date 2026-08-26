@@ -1,0 +1,63 @@
+<% content_for :title, "My receipts" %>
+<%= render "shared/resident_header", household: @household %>
+<%= render "shared/resident_menu", token: @household.token %>
+
+<% if @contributions.none? %>
+  <div class="mt-4 rounded-2xl bg-white p-5 text-sm text-slate-600 shadow-sm">
+    You have not given to any collection yet.
+  </div>
+<% end %>
+
+<% @contributions.each do |contribution| %>
+  <div class="mt-4 rounded-2xl bg-white p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="font-semibold text-slate-900"><%= contribution.describes %></p>
+        <p class="text-xs text-slate-500">
+          <%= contribution.mobilisation_campaign.name %> ·
+          <%= contribution.reference %>
+        </p>
+      </div>
+      <span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium
+                   <%= { 'reconciled' => 'bg-emerald-100 text-emerald-900',
+                         'exception'  => 'bg-red-100 text-red-900' }.fetch(contribution.status, 'bg-slate-100 text-slate-700') %>">
+        <%= contribution.reconciled? ? "Confirmed received" : contribution.status.humanize %>
+      </span>
+    </div>
+
+    <% if contribution.receipts.any? %>
+      <ul class="mt-3 divide-y divide-slate-100 text-sm">
+        <% contribution.receipts.each do |receipt| %>
+          <li class="py-2">
+            <p class="font-medium text-slate-800">
+              <%= receipt.payment_rail.humanize %>
+              <% if receipt.amount %>· <%= contribution.mobilisation_campaign.currency %> <%= receipt.amount %><% end %>
+            </p>
+            <p class="text-xs text-slate-500">
+              <%= receipt.reference %>
+              <% if receipt.external_reference.present? %>· your reference <%= receipt.external_reference %><% end %>
+              · <%= receipt.issued_on.strftime("%d %b %Y") %>
+            </p>
+            <p class="mt-1 text-xs <%= receipt.verified? ? "text-emerald-700" : "text-amber-700" %>">
+              <%# Nothing is hidden: a household is entitled to see that a payment
+                  is known about but not yet confirmed. %>
+              <%= receipt.verified? ? "Confirmed by the village office" : "The village office is still checking this" %>
+            </p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-3 text-sm text-slate-600">
+        No receipt recorded yet. If you have paid, take your reference to the
+        village office.
+      </p>
+    <% end %>
+
+    <% if contribution.exception? && contribution.exception_note.present? %>
+      <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+        <%= contribution.exception_note %>
+      </p>
+    <% end %>
+  </div>
+<% end %>
+<div class="pb-8"></div>

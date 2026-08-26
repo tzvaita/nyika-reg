@@ -8,6 +8,18 @@ Rails.application.routes.draw do
   get   "h/:token", to: "household_updates#show",   as: :household_update
   patch "h/:token", to: "household_updates#update"
 
+  # The rest of the resident menu from the concept deck. Every page is scoped to
+  # the household the token identifies.
+  scope "h/:token", as: :resident do
+    get  "support",      to: "resident/support#index",       as: :support
+    post "support",      to: "resident/support#create"
+    get  "applications", to: "resident/applications#index",  as: :applications
+    get  "pay",          to: "resident/payments#index",      as: :payments
+    post "pay",          to: "resident/payments#create"
+    get  "receipts",     to: "resident/receipts#index",      as: :receipts
+    get  "office",       to: "resident/office#index",        as: :office
+  end
+
   # Assisted capture: the same mobile form, driven by a signed-in registrar during
   # a home visit.
   namespace :capture do

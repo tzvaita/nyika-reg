@@ -1,0 +1,58 @@
+<% content_for :title, "Government support" %>
+<%= render "shared/resident_header", household: @household %>
+<%= render "shared/resident_menu", token: @household.token %>
+
+<div class="mt-4 rounded-2xl bg-white p-5 shadow-sm">
+  <h2 class="font-semibold text-slate-900">Ask to be considered for support</h2>
+  <p class="mt-2 text-sm text-slate-600">
+    The village office will look at your request and tell you what is needed.
+    Asking does not mean you will receive support — the government decides, not
+    the village office and not this system.
+  </p>
+</div>
+
+<%= form_with url: resident_support_path(token: @household.token), method: :post,
+              class: "mt-4 space-y-4" do %>
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <fieldset>
+      <legend class="text-sm font-medium text-slate-700">What kind of support?</legend>
+      <div class="mt-2 space-y-2">
+        <% @programme_types.each do |type| %>
+          <label class="flex items-center gap-3 rounded-lg bg-slate-50 p-3">
+            <%= radio_button_tag "programme_type", type, false, class: "h-5 w-5" %>
+            <span class="text-sm font-medium text-slate-800"><%= type.humanize %></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="mt-4">
+      <%= label_tag "beneficiary_id", "Who is it for?", class: "block text-sm font-medium text-slate-700" %>
+      <%= select_tag "beneficiary_id",
+                     options_for_select(@members.map { |m| [m.name, m.id] }),
+                     include_blank: "The whole household",
+                     class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+  </div>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <h3 class="font-semibold text-slate-900">Your agreement</h3>
+    <p class="mt-1 text-sm text-slate-600">
+      To open a request we need your agreement that this household may be
+      considered for support programmes. This is separate from anything else you
+      have agreed to, and you can withdraw it later by speaking to the office.
+    </p>
+    <label class="mt-3 flex items-start gap-3 rounded-lg bg-slate-50 p-3">
+      <%= check_box_tag "consent_given", "1", false, class: "mt-1 h-5 w-5" %>
+      <span class="text-sm text-slate-700">
+        <%= ConsentRecord::PURPOSE_DESCRIPTIONS["programme"] %>
+      </span>
+    </label>
+  </div>
+
+  <%= submit_tag "Send my request",
+                 class: "w-full rounded-xl bg-nyika-ink px-4 py-4 text-base font-semibold text-white" %>
+  <p class="pb-8 text-center text-xs text-slate-500">
+    The village office will confirm what evidence is needed.
+  </p>
+<% end %>

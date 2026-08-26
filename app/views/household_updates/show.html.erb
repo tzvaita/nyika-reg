@@ -1,10 +1,9 @@
 <% content_for :title, "Update your household" %>
 
-<div class="rounded-2xl bg-white p-5 shadow-sm">
-  <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Nyika Village Registry</p>
-  <h1 class="mt-1 text-xl font-bold text-nyika-ink"><%= @household.name %></h1>
-  <p class="mt-1 text-sm text-slate-500">Reference <%= @household.reference %></p>
+<%= render "shared/resident_header", household: @household %>
+<%= render "shared/resident_menu", token: @household.token %>
 
+<div class="mt-4 rounded-2xl bg-white p-5 shadow-sm">
   <% if @household.pending? %>
     <p class="mt-4 rounded-lg bg-amber-100 px-4 py-3 text-sm text-amber-900">
       The village office is checking your latest changes.

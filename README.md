@@ -40,6 +40,29 @@ These are structural, not policy notes. Changes that break them are defects, and
 
 ## How residents use it
 
+The resident menu from the concept deck, all six items, all behind one link:
+
+| | | |
+|---|---|---|
+| 1 | Update my household | correct how to reach and find you |
+| 2 | Government support | ask to be considered, agreeing explicitly |
+| 3 | Make a payment | pledge to an open campaign |
+| 4 | My applications | what you asked for and where it has got to |
+| 5 | My receipts | what you gave, and whether it is confirmed |
+| 6 | Speak to the village office | for anything the page cannot do |
+
+Three things the resident pages deliberately will NOT do:
+
+- **Asking for support does not imply consenting to it.** The request form
+  captures purpose-specific consent explicitly; without it, no case is opened.
+- **A resident cannot confirm their own payment.** A pledge stays a pledge until
+  the village office verifies a receipt against the approved account.
+- **Nothing is hidden.** A payment the office has not yet checked is shown as
+  still being checked, rather than omitted.
+
+The payment page shows the **approved receiving account**, which is the point at
+which the brief's "payment confusion" mitigation reaches the person who needs it.
+
 Residents have **no accounts and no passwords**. Each household has an unguessable
 link (`/h/<token>`) that opens its own record for updating. In this build a
 registrar copies that link from the household's admin page and sends it by hand;

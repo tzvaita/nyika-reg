@@ -1,0 +1,19 @@
+<%# The resident menu from the concept deck. Kept to plain, large tap targets:
+    this is used on a phone, often outdoors, on a slow connection. %>
+<nav class="mt-4 grid grid-cols-2 gap-2">
+  <% items = [
+       ["Update household", household_update_path(token: token), "1"],
+       ["Government support", resident_support_path(token: token), "2"],
+       ["Make a payment", resident_payments_path(token: token), "3"],
+       ["My applications", resident_applications_path(token: token), "4"],
+       ["My receipts", resident_receipts_path(token: token), "5"],
+       ["Speak to the office", resident_office_path(token: token), "6"]
+     ] %>
+  <% items.each do |label, path, number| %>
+    <%= link_to path,
+                class: "flex items-center gap-2 rounded-xl bg-white px-3 py-4 text-sm font-medium shadow-sm #{current_page?(path) ? 'ring-2 ring-nyika-ink' : ''}" do %>
+      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nyika-ink text-xs text-white"><%= number %></span>
+      <span><%= label %></span>
+    <% end %>
+  <% end %>
+</nav>

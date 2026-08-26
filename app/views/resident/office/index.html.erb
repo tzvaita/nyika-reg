@@ -1,0 +1,32 @@
+<% content_for :title, "Speak to the village office" %>
+<%= render "shared/resident_header", household: @household %>
+<%= render "shared/resident_menu", token: @household.token %>
+
+<div class="mt-4 rounded-2xl bg-white p-5 shadow-sm">
+  <h2 class="font-semibold text-slate-900">Speak to the village office</h2>
+  <p class="mt-2 text-sm text-slate-600">
+    For anything this page cannot do — adding or removing a member, changing what
+    you have agreed to, correcting a payment, or a question about a request —
+    speak to the village office in person.
+  </p>
+
+  <div class="mt-4 rounded-lg bg-slate-100 p-4 text-sm text-slate-700">
+    <p class="font-medium text-slate-900">Nyika Village Office</p>
+    <p class="mt-1">Open weekday mornings.</p>
+    <p class="mt-2 text-xs text-slate-500">
+      The office keeps the details here up to date.
+    </p>
+  </div>
+
+  <div class="mt-4 rounded-lg bg-slate-100 p-4 text-sm text-slate-700">
+    <p class="font-medium text-slate-900">Your rights</p>
+    <ul class="mt-1 list-disc space-y-1 pl-5">
+      <li>You can ask to see everything recorded about your household.</li>
+      <li>You can correct anything that is wrong.</li>
+      <li>You can withdraw any agreement you have given, at any time.</li>
+      <li>Every change is recorded with who made it, when, and why.</li>
+      <li>If your link has been seen by someone else, ask for a new one.</li>
+    </ul>
+  </div>
+</div>
+<div class="pb-8"></div>
