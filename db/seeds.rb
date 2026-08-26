@@ -18,6 +18,11 @@ password =
 demo_users = [
   { email: "registrar@nyika.local",  name: "Rudo Registrar",   role: :registrar },
   { email: "admin@nyika.local",      name: "Anesu Admin",      role: :administrator },
+  # A SECOND administrator, deliberately. Several rules in the registry need one
+  # person to do a thing and a different person to confirm it — evidence cannot
+  # be verified by whoever recorded it, and a receipt cannot be verified by
+  # whoever captured it. With a single administrator those checks deadlock.
+  { email: "admin2@nyika.local",     name: "Chipo Chirwa",     role: :administrator },
   { email: "programme@nyika.local",  name: "Panashe Poulton",  role: :programme_manager },
   { email: "tech@nyika.local",       name: "Tendai Tech",      role: :tech_admin }
 ]

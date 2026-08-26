@@ -166,8 +166,14 @@ bin/rails server
 | `/h/<token>` | a household's own record, no account needed |
 | `/admin/data_quality` | pilot metrics and the data-quality report |
 
-Seeded logins are `registrar@`, `admin@`, `programme@` and `tech@nyika.local`
-with the password `nyika-dev-password` (override with `SEED_PASSWORD`).
+Seeded logins are `registrar@`, `admin@`, `admin2@`, `programme@` and
+`tech@nyika.local` with the password `nyika-dev-password` (override with
+`SEED_PASSWORD`).
+
+There are **two** administrators on purpose: several rules need one person to
+act and a different person to confirm — evidence cannot be verified by whoever
+recorded it, a receipt cannot be verified by whoever captured it — and with a
+single administrator those checks deadlock.
 
 ### The CSS build step
 
