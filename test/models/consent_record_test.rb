@@ -16,9 +16,28 @@ class ConsentRecordTest < ActiveSupport::TestCase
     }.merge(overrides))
   end
 
-  test "the four purposes from the brief are all separately recordable" do
-    assert_equal %w[village_admin communication programme payment],
+  test "the five purposes from the brief are all separately recordable" do
+    # Brief p6: separate consent for village administration, programme support,
+    # communication, payment receipts and partner contact.
+    assert_equal %w[village_admin communication programme payment partner_contact],
                  ConsentRecord.purposes.keys
+  end
+
+  test "purpose ordinals are stable" do
+    # They are persisted integers. Reordering them would silently relabel every
+    # consent already recorded.
+    assert_equal({ "village_admin" => 0, "communication" => 1, "programme" => 2,
+                   "payment" => 3, "partner_contact" => 4 }, ConsentRecord.purposes)
+  end
+
+  test "partner contact is consented to separately from communication" do
+    person = @person
+    person.consent_records.create!(purpose: :communication, consent_version: "v1",
+                                   channel: :in_person, granted_on: Date.current)
+
+    assert person.consented_to?(:communication)
+    assert_not person.consented_to?(:partner_contact),
+               "agreeing to village contact must never imply partner contact"
   end
 
   test "there is no blanket consent column anywhere" do

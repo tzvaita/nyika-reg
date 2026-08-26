@@ -1,0 +1,17 @@
+/* Styles for the resident-facing and assisted-capture pages.
+ *
+ * Separate from active_admin.css because ActiveAdmin brings its own Tailwind
+ * config and plugin. These pages are used on a phone, often outdoors on a slow
+ * connection, so the design stays deliberately plain: large touch targets,
+ * high contrast, no images.
+ */
+@import "tailwindcss";
+
+@source "../../views";
+@source "../../helpers";
+@source "../../javascript";
+
+@theme {
+  --color-nyika-ink: #1e4b73;
+  --color-nyika-accent: #c2532a;
+}

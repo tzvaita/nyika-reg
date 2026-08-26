@@ -66,10 +66,11 @@ ActiveAdmin.register_page "Dashboard" do
     panel "Recent activity — the audit trail" do
       table_for PaperTrail::Version.order(created_at: :desc).limit(12) do
         column("When") { |v| v.created_at.strftime("%d %b %H:%M") }
-        column("Who") { |v| User.find_by(id: v.whodunnit)&.display_name || "system" }
+        column("Who") { |v| audit_actor_label(v) }
         column("Record") { |v| "#{v.item_type} ##{v.item_id}" }
         column("What") { |v| v.event.humanize }
         column("Reason") { |v| v.reason.presence || "—" }
+        column("Channel") { |v| audit_channel_label(v) }
       end
     end
   end

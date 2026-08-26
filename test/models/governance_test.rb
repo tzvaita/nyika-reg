@@ -30,7 +30,9 @@ class GovernanceTest < ActiveSupport::TestCase
 
   test "consent is modelled as rows per purpose, not a flag" do
     assert ConsentRecord.column_names.include?("purpose")
-    assert ConsentRecord.purposes.size >= 4
+    # Brief p6 names five: village administration, programme support,
+    # communication, payment receipts and partner contact.
+    assert_equal 5, ConsentRecord.purposes.size
 
     REGISTRY_MODELS.each do |model|
       blanket = model.column_names.grep(/\A(consented|consent_given|has_consent|opt_in)\z/)
@@ -46,11 +48,26 @@ class GovernanceTest < ActiveSupport::TestCase
     end
   end
 
-  test "the versions table records actor, time, values and reason" do
-    %w[whodunnit created_at object object_changes reason].each do |column|
+  test "the versions table records actor, time, values, reason and source channel" do
+    # Brief p4 defines the audit event as: actor, timestamp, action, old value,
+    # new value, reason, source channel.
+    %w[whodunnit created_at event object object_changes reason source_channel].each do |column|
       assert_includes PaperTrail::Version.column_names, column,
                       "the audit trail must record #{column}"
     end
+  end
+
+  test "every version is stamped with a source channel" do
+    # An unlabelled version would silently distort the pilot's "residents who
+    # update without assistance" figure.
+    household = Household.create!(name: "Channel test", capture_source: :assisted_visit,
+                                  change_reason: "test")
+    assert_equal "system", household.versions.last.source_channel
+
+    household.audit_source_channel = "resident_link"
+    household.update!(principal_contact: "Someone", change_reason: "resident edit")
+
+    assert_equal "resident_link", household.versions.last.source_channel
   end
 
   test "registry records are protected from deletion by association" do

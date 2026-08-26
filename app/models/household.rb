@@ -21,6 +21,15 @@ class Household < ApplicationRecord
   has_many :people, dependent: :restrict_with_error
   has_many :consent_records, through: :people
 
+  # allow_destroy is deliberately FALSE: a member who leaves is deactivated, so the
+  # audit trail keeps someone to point at. The form marks them inactive instead.
+  accepts_nested_attributes_for :people, allow_destroy: false
+
+  # The secret that lets this household open its own record without an account.
+  # It is a BEARER CREDENTIAL — anyone holding the link can edit this household —
+  # so it must be revocable. See #regenerate_token!.
+  has_secure_token :token
+
   validates :name, presence: true
   validates :reference, presence: true, uniqueness: true
 
@@ -52,6 +61,25 @@ class Household < ApplicationRecord
   def deactivate!(reason:)
     self.change_reason = reason
     update!(status: :inactive)
+  end
+
+  # Revokes the resident link. Every previously shared link stops working, so this
+  # is the remedy when one is forwarded to the wrong person.
+  def regenerate_token!(reason: "Resident link regenerated")
+    self.change_reason = reason
+    regenerate_token
+  end
+
+  # Saves changes a resident made to their own record, and puts the household back
+  # into the verification queue. A resident edit is never self-verifying: whoever
+  # submits a change, a second pair of eyes confirms it. An inactive household
+  # keeps its status — reactivating is a staff decision.
+  def record_resident_update!(reason:)
+    self.change_reason = reason
+    self.audit_source_channel = "resident_link"
+    self.status = :pending unless inactive?
+    save!
+    self
   end
 
   def active_people

@@ -53,6 +53,17 @@ ActiveAdmin.register Household do
       end
     end
 
+    panel "Resident link" do
+      div do
+        para "Send this to the household so they can check and update their own "\
+             "details. It needs no password. Anyone holding it can edit this "\
+             "household, so send it only to them — and regenerate it if it goes astray."
+      end
+      div style: "margin-top:0.75rem;font-family:monospace;word-break:break-all;" do
+        household_update_url(token: resource.token, host: request.host_with_port)
+      end
+    end
+
     panel "Members (#{resource.active_people.count})" do
       table_for resource.active_people.order(:relationship) do
         column(:name) { |p| link_to p.name, admin_person_path(p) }
@@ -70,9 +81,10 @@ ActiveAdmin.register Household do
       # Read-only by design: this is what makes the registry accountable.
       table_for resource.audit_trail.limit(25) do
         column("When") { |v| v.created_at.strftime("%d %b %Y %H:%M") }
-        column("Who")  { |v| User.find_by(id: v.whodunnit)&.display_name || "system" }
+        column("Who")  { |v| audit_actor_label(v) }
         column("What") { |v| v.event.humanize }
         column("Reason") { |v| v.reason.presence || "—" }
+        column("Channel") { |v| audit_channel_label(v) }
         column("Changed") do |v|
           changes = v.object_changes ? YAML.unsafe_load(v.object_changes).keys - %w[updated_at] : []
           changes.map(&:humanize).join(", ")
@@ -123,10 +135,24 @@ ActiveAdmin.register Household do
             method: :put, data: { turbo_method: :put, turbo_confirm: "Deactivate this household? The record is kept, not deleted." }
   end
 
+  action_item :regenerate_token, only: :show, if: -> { authorized?(:update, resource) } do
+    link_to "Regenerate resident link", regenerate_token_admin_household_path(resource),
+            data: { turbo_method: :put,
+                    turbo_confirm: "Regenerate the link? The household's current link will stop working immediately." }
+  end
+
   member_action :submit, method: :put do
     authorize! :submit_for_verification, resource
     resource.submit_for_verification!(reason: "Submitted from the registry workspace")
     redirect_to resource_path, notice: "Submitted for verification."
+  end
+
+  # Revoking a leaked link. The token is a bearer credential, so this has to exist.
+  member_action :regenerate_token, method: :put do
+    authorize! :update, resource
+    resource.regenerate_token!
+    redirect_to resource_path,
+                notice: "New resident link generated. The previous one no longer works."
   end
 
   member_action :verify, method: :put do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_104702) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_134702) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_104702) do
     t.string "principal_contact"
     t.string "reference", null: false
     t.integer "status", default: 0, null: false
+    t.string "token", null: false
     t.datetime "updated_at", null: false
     t.datetime "verified_at"
     t.bigint "verified_by_id"
@@ -61,6 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_104702) do
     t.index ["name", "location_description"], name: "index_households_on_name_and_location"
     t.index ["reference"], name: "index_households_on_reference", unique: true
     t.index ["status"], name: "index_households_on_status"
+    t.index ["token"], name: "index_households_on_token", unique: true
     t.index ["verified_by_id"], name: "index_households_on_verified_by_id"
   end
 
@@ -103,8 +105,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_104702) do
     t.text "object"
     t.text "object_changes"
     t.text "reason"
+    t.string "source_channel"
     t.string "whodunnit"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+    t.index ["source_channel"], name: "index_versions_on_source_channel"
   end
 
   add_foreign_key "consent_records", "people"

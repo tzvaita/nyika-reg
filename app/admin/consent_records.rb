@@ -46,9 +46,10 @@ ActiveAdmin.register ConsentRecord do
     panel "Audit trail" do
       table_for resource.audit_trail.limit(15) do
         column("When") { |v| v.created_at.strftime("%d %b %Y %H:%M") }
-        column("Who")  { |v| User.find_by(id: v.whodunnit)&.display_name || "system" }
+        column("Who")  { |v| audit_actor_label(v) }
         column("What") { |v| v.event.humanize }
         column("Reason") { |v| v.reason.presence || "—" }
+        column("Channel") { |v| audit_channel_label(v) }
       end
     end
   end

@@ -6,6 +6,8 @@
   },
   "type": "module",
   "scripts": {
-    "build:css": "tailwindcss -i app/assets/tailwind/active_admin.css -o app/assets/builds/active_admin.css --minify"
+    "build:css": "npm run build:css:admin && npm run build:css:app",
+    "build:css:admin": "tailwindcss -i app/assets/tailwind/active_admin.css -o app/assets/builds/active_admin.css --minify",
+    "build:css:app": "tailwindcss -i app/assets/tailwind/application.css -o app/assets/builds/application.css --minify"
   }
 }

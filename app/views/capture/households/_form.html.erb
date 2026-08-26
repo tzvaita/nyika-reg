@@ -1,0 +1,77 @@
+<%# Shared by new and edit. Mobile-first: this is filled in on a phone, standing
+    in a homestead, often on a slow connection. %>
+<%= form_with model: household,
+              url: url,
+              method: method,
+              class: "mt-4 space-y-4" do |f| %>
+
+  <% if household.errors.any? %>
+    <div class="rounded-xl bg-red-100 p-4 text-sm text-red-900">
+      <p class="font-semibold">Please check the following:</p>
+      <ul class="mt-1 list-disc pl-5">
+        <% household.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <h2 class="font-semibold text-slate-900">Household</h2>
+
+    <div class="mt-4">
+      <%= f.label :name, "Household name", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :name, autofocus: household.new_record?,
+                       class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+
+    <div class="mt-4">
+      <%= f.label :principal_contact, "Main contact person", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :principal_contact,
+                       class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+
+    <div class="mt-4">
+      <%= f.label :location_description, "Where the homestead is", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_area :location_description, rows: 3,
+                      class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+      <p class="mt-1 text-xs text-slate-500">In words, as a neighbour would give it. Not GPS, not a plot number.</p>
+    </div>
+
+    <div class="mt-4">
+      <%= f.label :capture_source, "How this was captured", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.select :capture_source,
+                   Household.capture_sources.keys.map { |s| [ s.humanize, s ] },
+                   {},
+                   class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+  </div>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <h2 class="font-semibold text-slate-900">Members</h2>
+
+    <%= f.fields_for :people do |person_fields| %>
+      <%= render "capture/households/person_fields", f: person_fields %>
+    <% end %>
+  </div>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <%= label_tag "household_change_reason", "Reason for this change",
+                  class: "block text-sm font-medium text-slate-700" %>
+    <%= text_field_tag "household[change_reason]", nil,
+                       id: "household_change_reason",
+                       class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    <p class="mt-1 text-xs text-slate-500">Recorded in the audit trail with your name.</p>
+  </div>
+
+  <div class="space-y-3 pb-8">
+    <%= f.submit submit_label,
+                 class: "w-full rounded-xl bg-nyika-ink px-4 py-4 text-base font-semibold text-white" %>
+
+    <% if household.persisted? && household.draft? %>
+      <%= f.submit "Save and send for verification",
+                   name: "submit_for_verification",
+                   class: "w-full rounded-xl border-2 border-nyika-accent px-4 py-4 text-base font-semibold text-nyika-accent" %>
+    <% end %>
+  </div>
+<% end %>

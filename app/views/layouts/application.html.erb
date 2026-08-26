@@ -18,16 +18,22 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%# Built by `npm run build:css:app` from app/assets/tailwind/application.css.
+        The generated :app default pointed at app.css, which never existed. %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <% flash.each do |type, message| %>
-      <p class="flash flash-<%= type %>"><%= message %></p>
-    <% end %>
+  <body class="bg-slate-50 text-slate-900 antialiased">
+    <div class="mx-auto max-w-2xl px-4 py-6">
+      <% flash.each do |type, message| %>
+        <p class="mb-4 rounded-lg px-4 py-3 text-sm font-medium
+                  <%= type.to_s == "alert" ? "bg-red-100 text-red-900" : "bg-emerald-100 text-emerald-900" %>">
+          <%= message %>
+        </p>
+      <% end %>
 
-    <%= yield %>
+      <%= yield %>
+    </div>
   </body>
 </html>

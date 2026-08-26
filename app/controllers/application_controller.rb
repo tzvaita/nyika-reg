@@ -10,6 +10,17 @@ class ApplicationController < ActionController::Base
     redirect_back fallback_location: root_path, alert: exception.message
   end
 
+  # The channel every version written during this request is stamped with.
+  # Controllers serving residents override this; see HouseholdUpdatesController.
+  def audit_source_channel
+    "admin"
+  end
+
+  # PaperTrail merges controller_info into each version's metadata.
+  def info_for_paper_trail
+    { source_channel: audit_source_channel }
+  end
+
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 

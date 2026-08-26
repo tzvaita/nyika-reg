@@ -1,0 +1,29 @@
+<% content_for :title, "#{@household.reference} — assisted capture" %>
+
+<div class="rounded-2xl bg-white p-5 shadow-sm">
+  <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Assisted capture</p>
+  <h1 class="mt-1 text-xl font-bold text-nyika-ink"><%= @household.name %></h1>
+  <p class="mt-1 text-sm text-slate-500">
+    <%= @household.reference %> ·
+    <span class="font-medium"><%= @household.status.humanize %></span>
+  </p>
+
+  <% if @household.missing_required_fields.any? %>
+    <p class="mt-3 rounded-lg bg-amber-100 px-4 py-3 text-sm text-amber-900">
+      Still missing: <%= @household.missing_required_fields.map(&:humanize).to_sentence %>.
+    </p>
+  <% end %>
+
+  <% if @household.pending? %>
+    <p class="mt-3 rounded-lg bg-blue-100 px-4 py-3 text-sm text-blue-900">
+      Waiting in the verification queue. An administrator confirms it — you cannot
+      verify your own capture.
+    </p>
+  <% end %>
+</div>
+
+<%= render "capture/households/form",
+           household: @household,
+           url: capture_household_path(@household),
+           method: :patch,
+           submit_label: "Save changes" %>

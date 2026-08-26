@@ -33,6 +33,19 @@ class Person < ApplicationRecord
 
   scope :active, -> { where(active: true) }
 
+  # Lets a form present consent as one checkbox per purpose while keeping the
+  # underlying model one row per purpose. Ticking creates a consent record;
+  # UNTICKING withdraws the existing one rather than deleting it, so the fact that
+  # consent was once given, and later withdrawn, stays in the record.
+  attr_writer :consent_purposes
+  attr_accessor :consent_channel
+
+  after_save :apply_consent_selections
+
+  def consent_purposes
+    @consent_purposes || consent_records.active.map(&:purpose)
+  end
+
   # Soft delete — a person leaving the household must not erase their history.
   def deactivate!(reason:)
     self.change_reason = reason
@@ -68,5 +81,36 @@ class Person < ApplicationRecord
     return if age_band.present? || year_of_birth.present?
 
     errors.add(:age_band, "or year of birth must be given")
+  end
+
+  # Reconciles the ticked purposes against what is already on record. Runs only
+  # when a form actually supplied a selection — an untouched person keeps their
+  # existing consent untouched.
+  def apply_consent_selections
+    return if @consent_purposes.nil?
+
+    selected = Array(@consent_purposes).reject(&:blank?).map(&:to_s)
+    channel  = consent_channel.presence || "in_person"
+
+    selected.each do |purpose|
+      next if consented_to?(purpose)
+
+      consent_records.create!(
+        purpose: purpose,
+        consent_version: ConsentRecord::CURRENT_VERSION,
+        channel: channel,
+        granted_on: Date.current,
+        change_reason: "Consent given for #{purpose.humanize.downcase}",
+        audit_source_channel: audit_source_channel
+      )
+    end
+
+    # Anything no longer ticked is WITHDRAWN, never deleted.
+    consent_records.active.reject { |record| selected.include?(record.purpose) }.each do |record|
+      record.audit_source_channel = audit_source_channel
+      record.withdraw!(reason: "Consent withdrawn for #{record.purpose.humanize.downcase}")
+    end
+
+    @consent_purposes = nil
   end
 end

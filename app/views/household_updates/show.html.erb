@@ -1,0 +1,103 @@
+<% content_for :title, "Update your household" %>
+
+<div class="rounded-2xl bg-white p-5 shadow-sm">
+  <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Nyika Village Registry</p>
+  <h1 class="mt-1 text-xl font-bold text-nyika-ink"><%= @household.name %></h1>
+  <p class="mt-1 text-sm text-slate-500">Reference <%= @household.reference %></p>
+
+  <% if @household.pending? %>
+    <p class="mt-4 rounded-lg bg-amber-100 px-4 py-3 text-sm text-amber-900">
+      The village office is checking your latest changes.
+    </p>
+  <% elsif @household.verified? %>
+    <p class="mt-4 rounded-lg bg-emerald-100 px-4 py-3 text-sm text-emerald-900">
+      Your household details have been confirmed by the village office.
+    </p>
+  <% end %>
+</div>
+
+<%= form_with model: @household,
+              url: household_update_path(token: @household.token),
+              method: :patch,
+              class: "mt-4 space-y-4" do |f| %>
+
+  <% if @household.errors.any? %>
+    <div class="rounded-xl bg-red-100 p-4 text-sm text-red-900">
+      <p class="font-semibold">Please check the following:</p>
+      <ul class="mt-1 list-disc pl-5">
+        <% @household.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <h2 class="font-semibold text-slate-900">How to reach and find you</h2>
+
+    <div class="mt-4">
+      <%= f.label :principal_contact, "Main contact person",
+                  class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :principal_contact,
+                       class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+
+    <div class="mt-4">
+      <%= f.label :location_description, "Where your homestead is",
+                  class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_area :location_description, rows: 3,
+                      class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+      <p class="mt-1 text-xs text-slate-500">
+        Describe it the way you would tell a neighbour. This is not a land or plot claim.
+      </p>
+    </div>
+  </div>
+
+  <%# Members are shown but not editable from the resident link: adding or removing
+      a person changes who is in the register, which the village office confirms. %>
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <h2 class="font-semibold text-slate-900">Who lives here</h2>
+    <ul class="mt-3 divide-y divide-slate-100">
+      <% @household.active_people.each do |person| %>
+        <li class="py-3">
+          <p class="font-medium text-slate-900"><%= person.name %></p>
+          <p class="text-sm text-slate-500">
+            <%= person.relationship.humanize %> ·
+            <%= person.age_band&.humanize || person.year_of_birth || "age not recorded" %>
+          </p>
+          <p class="mt-1 text-xs text-slate-500">
+            Agreed to:
+            <% given = ConsentRecord.purposes.keys.select { |p| person.consented_to?(p) } %>
+            <%= given.any? ? given.map(&:humanize).join(", ") : "nothing recorded yet" %>
+          </p>
+        </li>
+      <% end %>
+      <% if @household.active_people.none? %>
+        <li class="py-3 text-sm text-slate-500">No members recorded yet.</li>
+      <% end %>
+    </ul>
+    <p class="mt-3 text-xs text-slate-500">
+      To add or remove someone, or to change what you have agreed to, speak to the
+      village office.
+    </p>
+  </div>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm">
+    <%= label_tag "household_change_reason", "What has changed?",
+                  class: "block text-sm font-medium text-slate-700" %>
+    <%= text_field_tag "household[change_reason]", nil,
+                       id: "household_change_reason",
+                       placeholder: "For example: new phone number",
+                       class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    <p class="mt-1 text-xs text-slate-500">
+      Recorded with your change so the village office can see why it was made.
+    </p>
+  </div>
+
+  <%= f.submit "Send to the village office",
+               class: "w-full rounded-xl bg-nyika-ink px-4 py-4 text-base font-semibold text-white" %>
+
+  <p class="pb-8 text-center text-xs text-slate-500">
+    Your changes are checked by the village office before they are confirmed.
+  </p>
+<% end %>

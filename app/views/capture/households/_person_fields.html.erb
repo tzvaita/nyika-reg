@@ -1,0 +1,91 @@
+<%# One member. Consent is a checkbox PER PURPOSE — never a single "consents" box.
+    Unticking one that was previously ticked withdraws it; it is not deleted. %>
+<div class="mt-4 rounded-xl border border-slate-200 p-4">
+  <%= f.hidden_field :id %>
+
+  <div>
+    <%= f.label :name, "Name", class: "block text-sm font-medium text-slate-700" %>
+    <%= f.text_field :name,
+                     class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+  </div>
+
+  <div class="mt-3 grid grid-cols-2 gap-3">
+    <div>
+      <%= f.label :relationship, class: "block text-sm font-medium text-slate-700" %>
+      <%= f.select :relationship,
+                   Person.relationships.keys.map { |r| [ r.humanize, r ] },
+                   { include_blank: "—" },
+                   class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+
+    <div>
+      <%= f.label :residency_status, "Residency", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.select :residency_status,
+                   Person.residency_statuses.keys.map { |r| [ r.humanize, r ] },
+                   { include_blank: "—" },
+                   class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+  </div>
+
+  <div class="mt-3 grid grid-cols-2 gap-3">
+    <div>
+      <%= f.label :age_band, "Age band", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.select :age_band,
+                   Person.age_bands.keys.map { |b| [ b.humanize, b ] },
+                   { include_blank: "—" },
+                   class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+
+    <div>
+      <%= f.label :year_of_birth, "or year of birth", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.number_field :year_of_birth,
+                         class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+    </div>
+  </div>
+  <p class="mt-1 text-xs text-slate-500">
+    One of the two is enough. We do not record dates of birth.
+  </p>
+
+  <div class="mt-3">
+    <%= f.label :contact_method, "How to reach them (optional)",
+                class: "block text-sm font-medium text-slate-700" %>
+    <%= f.text_field :contact_method,
+                     class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+  </div>
+
+  <fieldset class="mt-4">
+    <legend class="text-sm font-medium text-slate-700">What have they agreed to?</legend>
+    <p class="text-xs text-slate-500">
+      Read each one out. Each is agreed to separately — ticking one is not ticking all.
+    </p>
+
+    <%# Ensures an all-unticked submission still sends an (empty) selection, so
+        withdrawing the last consent is recorded rather than ignored. %>
+    <%= f.hidden_field :consent_purposes, multiple: true, value: "" %>
+
+    <div class="mt-2 space-y-2">
+      <% ConsentRecord.purposes.keys.each do |purpose| %>
+        <label class="flex items-start gap-3 rounded-lg bg-slate-50 p-3">
+          <%= f.check_box :consent_purposes,
+                          { multiple: true, checked: f.object.consent_purposes.include?(purpose),
+                            include_hidden: false, class: "mt-1 h-5 w-5" },
+                          purpose, nil %>
+          <span class="text-sm text-slate-700">
+            <span class="font-medium"><%= purpose.humanize %></span><br>
+            <%= ConsentRecord::PURPOSE_DESCRIPTIONS[purpose] %>
+          </span>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <% if f.object.persisted? %>
+    <label class="mt-3 flex items-center gap-2 text-sm text-slate-600">
+      <%= f.check_box :active, class: "h-5 w-5" %>
+      Still a member of this household
+    </label>
+    <p class="text-xs text-slate-500">
+      Unticking keeps their record and history; it does not delete them.
+    </p>
+  <% end %>
+</div>

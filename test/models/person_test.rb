@@ -71,6 +71,48 @@ class PersonTest < ActiveSupport::TestCase
     assert_not person.consented_to?(:payment)
   end
 
+  test "ticking a purpose on a form records consent for exactly that purpose" do
+    person = build_person(consent_purposes: %w[village_admin partner_contact])
+
+    assert person.consented_to?(:village_admin)
+    assert person.consented_to?(:partner_contact)
+    assert_not person.consented_to?(:communication)
+    assert_not person.consented_to?(:programme)
+    assert_not person.consented_to?(:payment)
+  end
+
+  test "unticking a purpose WITHDRAWS it rather than deleting the record" do
+    person = build_person(consent_purposes: %w[village_admin communication])
+    assert_equal 2, person.consent_records.count
+
+    person.update!(consent_purposes: %w[village_admin], change_reason: "changed their mind")
+    person.reload
+
+    assert person.consented_to?(:village_admin)
+    assert_not person.consented_to?(:communication)
+    assert_equal 2, person.consent_records.count,
+                 "the withdrawn consent must still exist as a record"
+    assert_equal %w[communication], person.consent_records.withdrawn.map(&:purpose)
+  end
+
+  test "a withdrawal made through a form is audited with a reason" do
+    person = build_person(consent_purposes: %w[communication])
+    person.update!(consent_purposes: [], change_reason: "asked to stop being contacted")
+
+    withdrawn = person.reload.consent_records.withdrawn.first
+    assert_not_nil withdrawn.withdrawn_at
+    assert_match(/withdrawn/i, withdrawn.audit_trail.first.reason)
+  end
+
+  test "not supplying a selection leaves existing consent untouched" do
+    person = build_person(consent_purposes: %w[village_admin])
+
+    person.update!(name: "Renamed Person", change_reason: "corrected spelling")
+
+    assert person.reload.consented_to?(:village_admin),
+           "an edit that never mentions consent must not silently revoke it"
+  end
+
   test "a withdrawn consent no longer counts as consent" do
     person = build_person
     consent = person.consent_records.create!(purpose: :communication, consent_version: "v1",
