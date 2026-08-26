@@ -34,3 +34,97 @@ demo_users.each do |attrs|
 end
 
 puts "Seeded #{User.count} users."
+
+# ---------------------------------------------------------------------------
+# Demo households. Illustrative only — every name and place here is invented.
+# NEVER put real household data in this file: seeds are committed to a public
+# repository, resident data is not.
+# ---------------------------------------------------------------------------
+registrar = User.find_by(email: "registrar@nyika.local")
+admin     = User.find_by(email: "admin@nyika.local")
+PaperTrail.request.whodunnit = registrar&.id.to_s
+
+DEMO_HOUSEHOLDS = [
+  {
+    name: "Moyo homestead", contact: "Sekuru Moyo",
+    location: "Third homestead past the borehole, along the footpath",
+    source: :assisted_visit, status: :verified,
+    people: [
+      { name: "Tapiwa Moyo",  rel: :head,   band: :age_60_plus, res: :resident,
+        consents: %i[village_admin communication programme] },
+      { name: "Rudo Moyo",    rel: :spouse, band: :age_36_59,   res: :resident,
+        consents: %i[village_admin communication] },
+      { name: "Tanaka Moyo",  rel: :child,  band: :age_5_17,    res: :resident,
+        consents: %i[village_admin] }
+    ]
+  },
+  {
+    name: "Ncube homestead", contact: "Mai Ncube",
+    location: "Next to the primary school, blue gate",
+    source: :community_event, status: :pending,
+    people: [
+      { name: "Sibongile Ncube", rel: :head,  band: :age_36_59, res: :resident,
+        consents: %i[village_admin communication payment] },
+      { name: "Thabo Ncube",     rel: :child, band: :under_5,   res: :resident,
+        consents: %i[village_admin] }
+    ]
+  },
+  {
+    name: "Chikwanha homestead", contact: "Baba Chikwanha",
+    location: "Beyond the dip tank, last homestead before the river",
+    source: :assisted_visit, status: :draft,
+    people: [
+      { name: "Farai Chikwanha", rel: :head, band: :age_18_35, res: :resident,
+        consents: %i[village_admin] }
+    ]
+  },
+  {
+    # Deliberately incomplete, so the exceptions panel and the data-quality
+    # report (plan step 7) have something to report.
+    name: "Dube homestead", contact: nil, location: nil,
+    source: :self_reported, status: :draft, people: []
+  }
+]
+
+DEMO_HOUSEHOLDS.each do |spec|
+  household = Household.find_or_initialize_by(name: spec[:name])
+  next if household.persisted?
+
+  household.assign_attributes(
+    principal_contact: spec[:contact],
+    location_description: spec[:location],
+    capture_source: spec[:source],
+    captured_by: registrar,
+    change_reason: "Demo data"
+  )
+  household.save!
+
+  spec[:people].each do |person_spec|
+    person = household.people.create!(
+      name: person_spec[:name], relationship: person_spec[:rel],
+      age_band: person_spec[:band], residency_status: person_spec[:res],
+      change_reason: "Demo data"
+    )
+
+    person_spec[:consents].each do |purpose|
+      person.consent_records.create!(
+        purpose: purpose, consent_version: "v1", channel: :in_person,
+        granted_on: Date.current - rand(1..60), recorded_by: registrar,
+        change_reason: "Demo data"
+      )
+    end
+  end
+
+  # Walk the lifecycle so the queues and the audit trail both have content.
+  if %i[pending verified].include?(spec[:status])
+    household.submit_for_verification!(reason: "Capture complete")
+  end
+  if spec[:status] == :verified && admin
+    PaperTrail.request.whodunnit = admin.id.to_s
+    household.verify!(by: admin, reason: "Confirmed on site visit")
+    PaperTrail.request.whodunnit = registrar&.id.to_s
+  end
+end
+
+puts "Seeded #{Household.count} households, #{Person.count} people, " \
+     "#{ConsentRecord.count} consent records."
