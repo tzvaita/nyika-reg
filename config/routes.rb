@@ -51,4 +51,8 @@ Rails.application.routes.draw do
   # Inbound WhatsApp. Unauthenticated by nature — the provider's signature is the
   # control, and it is verified before the payload is read.
   post "webhooks/whatsapp", to: "webhooks/whatsapp#create"
+
+  # Delivery status callbacks. Without these "sent" only means the provider
+  # accepted the message, not that it reached anyone.
+  post "webhooks/whatsapp/status", to: "webhooks/whatsapp_status#create"
 end

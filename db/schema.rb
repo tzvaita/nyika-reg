@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_202806) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_205116) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -180,7 +180,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_202806) do
     t.boolean "disclosure", default: false, null: false
     t.text "error_message"
     t.bigint "household_id"
+    t.string "provider_error_code"
     t.string "provider_message_id"
+    t.string "provider_status"
+    t.datetime "read_at"
     t.datetime "sent_at"
     t.string "skip_reason"
     t.integer "status", default: 0, null: false
@@ -189,6 +192,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_202806) do
     t.datetime "updated_at", null: false
     t.index ["conversation_id"], name: "index_outbound_messages_on_conversation_id"
     t.index ["household_id"], name: "index_outbound_messages_on_household_id"
+    t.index ["provider_message_id"], name: "index_outbound_messages_on_provider_message_id"
     t.index ["status"], name: "index_outbound_messages_on_status"
     t.index ["template_key"], name: "index_outbound_messages_on_template_key"
     t.index ["to_number"], name: "index_outbound_messages_on_to_number"

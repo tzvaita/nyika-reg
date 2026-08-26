@@ -13,11 +13,16 @@ module Messaging
   # dependency, and it keeps the adapter readable as an example for the next one.
   class TwilioAdapter < Adapter
     def deliver(outbound_message)
-      response = post(
+      params = {
         To: "whatsapp:#{outbound_message.to_number}",
         From: "whatsapp:#{from_number}",
         Body: outbound_message.body
-      )
+      }
+      # Ask Twilio to report what became of it. Without this the outbox only ever
+      # knows the message was accepted, never that it arrived.
+      params[:StatusCallback] = status_callback_url if status_callback_url.present?
+
+      response = post(params)
 
       if response.is_a?(Net::HTTPSuccess)
         Adapter::Result.new(success?: true,
@@ -37,6 +42,13 @@ module Messaging
     def account_sid = ENV["TWILIO_ACCOUNT_SID"]
     def auth_token  = ENV["TWILIO_AUTH_TOKEN"]
     def from_number = ENV.fetch("TWILIO_WHATSAPP_FROM", "+14155238886") # sandbox default
+
+    # Where Twilio should report delivery. Omitted when unset, in which case
+    # messages stay at "sent" and the outbox says so honestly.
+    def status_callback_url
+      ENV["TWILIO_STATUS_CALLBACK_URL"].presence ||
+        (ENV["APP_BASE_URL"].presence && "#{ENV['APP_BASE_URL'].chomp('/')}/webhooks/whatsapp/status")
+    end
 
     def post(params)
       uri = URI("https://api.twilio.com/2010-04-01/Accounts/#{account_sid}/Messages.json")

@@ -82,3 +82,7 @@ services:
       # reconstructs differs from the one configured in Twilio.
       - key: TWILIO_WEBHOOK_URL
         sync: false
+      # Where Twilio reports delivery. Without it messages stay at "sent",
+      # meaning "the provider accepted it" rather than "it arrived".
+      - key: TWILIO_STATUS_CALLBACK_URL
+        sync: false

@@ -8,10 +8,7 @@ module Webhooks
   # It always answers quickly and never leaks: a provider gets 200 or 403 and
   # nothing about whether a number is known to the registry.
   class WhatsappController < ApplicationController
-    skip_before_action :verify_authenticity_token
-    skip_before_action :authenticate_user!, raise: false
-
-    before_action :verify_signature
+    include TwilioSignatureVerification
 
     # A flood cannot be stopped here, but it can be slowed. Rails.cache is now
     # database-backed, so this limit actually holds across processes.
@@ -62,40 +59,10 @@ module Webhooks
       )
     end
 
-    # Twilio signs each request with the auth token over the URL and sorted
-    # params. Without a configured token the endpoint refuses everything rather
-    # than defaulting to open — a misconfiguration must fail closed.
-    def verify_signature
-      return head(:forbidden) if auth_token.blank?
-      return if ActiveSupport::SecurityUtils.secure_compare(expected_signature, provided_signature)
-
-      # The commonest cause of this is the signed URL not matching the one Rails
-      # reconstructs — a proxy, a trailing slash, http vs https. Log the URL used
-      # so that is diagnosable without guessing. No secret is logged.
-      Rails.logger.warn(
-        "[whatsapp] signature rejected. Verified against #{webhook_url.inspect}. " \
-        "If Twilio is configured with a different URL, set TWILIO_WEBHOOK_URL to match."
-      )
-      head :forbidden
-    end
-
-    # Twilio signs the URL exactly as configured in its console. Behind a proxy
-    # the reconstructed URL can differ, so allow it to be pinned.
-    def webhook_url
+    # Twilio signs the URL as configured in its console; behind a proxy the
+    # reconstructed one can differ, so allow it to be pinned.
+    def twilio_webhook_url
       ENV["TWILIO_WEBHOOK_URL"].presence || request.original_url
-    end
-
-    def provided_signature
-      request.headers["X-Twilio-Signature"].to_s
-    end
-
-    def expected_signature
-      data = webhook_url + request.request_parameters.sort.flatten.join
-      Base64.strict_encode64(OpenSSL::HMAC.digest("sha1", auth_token, data))
-    end
-
-    def auth_token
-      ENV["TWILIO_AUTH_TOKEN"]
     end
   end
 end
