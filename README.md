@@ -318,6 +318,98 @@ Free-tier caveats worth knowing before sharing a link: the web service sleeps af
 inactivity, so the first request can take the better part of a minute, and free
 Postgres instances expire after a limited period. Check Render's current terms.
 
+## WhatsApp
+
+Inbound messages arrive at `POST /webhooks/whatsapp`. The sender's number decides
+what happens:
+
+- **Number matches a household** → the six-item menu, the same one the web
+  resident pages offer.
+- **Number matches nothing** → a short registration flow ending in a
+  `RegistrationRequest`. No household, person or consent record is created by a
+  stranger, exactly as `/register` behaves.
+
+Numbers match on the normalised `contact_number`, so however the provider formats
+them they find the right household.
+
+### What the chat will not do
+
+- **Open a case without explicit agreement.** The consent question must be
+  answered YES, the message that says so is kept as evidence, and the consent is
+  recorded with `channel: whatsapp`.
+- **Confirm anything a resident cannot confirm on the web.** An update returns to
+  the verification queue; a pledge stays a pledge until the office verifies a
+  receipt.
+- **Open a second request for something already open.** It answers with the
+  existing reference and status instead.
+
+### Reads, and why they are gated
+
+Showing household data in a chat was a deliberate choice, and a phone number is
+weak proof of identity — handsets are shared, SIMs are swapped, a chat history
+persists. So reads require someone in the household to have consented to
+`communication`, a session lapses after 20 minutes, `STOP` clears it, and **every
+disclosure is recorded in the outbox** so what was shown, to which number and
+when can be answered afterwards.
+
+A lapsed session shows the menu rather than acting: someone answering an
+hour-old question should not have that answer silently start something else.
+
+### Delivery status
+
+`sent` means Twilio **accepted** the message. It does not mean anyone received
+it. Twilio reports what actually happened to `POST /webhooks/whatsapp/status`,
+which moves a message to `delivered`, records `read_at` where WhatsApp reports a
+read, or marks it `failed` with the provider's error code.
+
+Two things this handles that a naive version does not:
+
+- **Callbacks arrive out of order.** A late `sent` will not undo a `delivered`
+  that already landed.
+- **Failure always wins.** However late the news arrives, a message that failed
+  did not reach anyone.
+
+Without `TWILIO_STATUS_CALLBACK_URL` (or `APP_BASE_URL`) no callback is
+requested, and messages honestly stay at `sent` rather than claiming a delivery
+nobody confirmed.
+
+### Providers
+
+`Messaging::Adapter.build` picks from `MESSAGING_ADAPTER`. The default `log`
+adapter records what would have been sent, so the whole flow is testable with no
+provider at all. `twilio` is the first real one, chosen because its **sandbox
+needs no Meta business verification** — a handset can join in minutes. Meta's
+Cloud API slots in behind the same one-method interface.
+
+Both webhooks **fail closed**: with no `TWILIO_AUTH_TOKEN` configured they refuse
+every request rather than defaulting to open, and signatures are verified before
+the payload is read. A rejection logs the URL it verified against, since a proxy
+changing the reconstructed URL is the usual cause — pin it with
+`TWILIO_WEBHOOK_URL` / `TWILIO_STATUS_CALLBACK_URL` if needed.
+
+> The Twilio adapter is written against the documented API and covered by tests
+> with locally generated signatures. It has **not** been exercised against the
+> live service; that is unproven until a handset joins the sandbox and sends a
+> message.
+
+### Connecting a real account
+
+1. Twilio account → Account SID and Auth Token from the console.
+2. Console → Messaging → Try it out → Send a WhatsApp message. Send the shown
+   `join <code>` from your handset. The opt-in lapses after 72 hours of
+   inactivity.
+3. Twilio needs a **public URL**, so point it at the deployed app rather than
+   localhost (or use a tunnel). Set the sandbox's "When a message comes in" to
+   `https://<host>/webhooks/whatsapp` and the status callback to
+   `https://<host>/webhooks/whatsapp/status`, both POST.
+4. Set `MESSAGING_ADAPTER=twilio`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
+   `TWILIO_WHATSAPP_FROM` and `TWILIO_STATUS_CALLBACK_URL`.
+5. To get the menu rather than the registration flow, put your number on a
+   household in `/admin`.
+
+Free Render instances sleep, so the first message after idle may time out while
+the instance wakes; Twilio retries.
+
 ## Background jobs and caching
 
 `solid_queue` and `solid_cache` run on the **primary database** — this deployment
