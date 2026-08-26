@@ -51,9 +51,12 @@ DEMO_HOUSEHOLDS = [
     source: :assisted_visit, status: :verified,
     people: [
       { name: "Tapiwa Moyo",  rel: :head,   band: :age_60_plus, res: :resident,
-        consents: %i[village_admin communication programme] },
+        consents: %i[village_admin communication programme partner_contact] },
       { name: "Rudo Moyo",    rel: :spouse, band: :age_36_59,   res: :resident,
-        consents: %i[village_admin communication] },
+        consents: %i[village_admin communication],
+        # Agreed to partner contact, then changed their mind. The record of both
+        # facts is kept — this is what withdrawal looks like in the data.
+        withdrawn: %i[partner_contact] },
       { name: "Tanaka Moyo",  rel: :child,  band: :age_5_17,    res: :resident,
         consents: %i[village_admin] }
     ]
@@ -108,10 +111,25 @@ DEMO_HOUSEHOLDS.each do |spec|
 
     person_spec[:consents].each do |purpose|
       person.consent_records.create!(
-        purpose: purpose, consent_version: "v1", channel: :in_person,
-        granted_on: Date.current - rand(1..60), recorded_by: registrar,
-        change_reason: "Demo data"
+        purpose: purpose, consent_version: ConsentRecord::CURRENT_VERSION,
+        channel: :in_person, granted_on: Date.current - rand(1..60),
+        recorded_by: registrar, change_reason: "Demo data",
+        audit_source_channel: "seed"
       )
+    end
+
+    # Consent that was given and later withdrawn. Both rows survive: the register
+    # has to be able to show that consent once existed and was then withdrawn.
+    Array(person_spec[:withdrawn]).each do |purpose|
+      record = person.consent_records.create!(
+        purpose: purpose, consent_version: ConsentRecord::CURRENT_VERSION,
+        channel: :in_person, granted_on: Date.current - 45,
+        recorded_by: registrar, change_reason: "Demo data",
+        audit_source_channel: "seed"
+      )
+      record.audit_source_channel = "seed"
+      record.withdraw!(reason: "Asked not to be contacted by partners",
+                       note: "Raised at a village meeting")
     end
   end
 
