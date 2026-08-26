@@ -1,5 +1,8 @@
 class Person < ApplicationRecord
   include Auditable
+  include Contactable
+
+  contact_source_attribute :contact_method
 
   enum :relationship, {
     head: 0, spouse: 1, child: 2, parent: 3,

@@ -68,6 +68,10 @@ ActiveAdmin.register Household do
         row :name
         row(:status) { |h| status_tag h.status.humanize, class: HOUSEHOLD_STATUS_COLOURS[h.status] }
         row :principal_contact
+        row("Reachable by message") do |h|
+          h.contact_number.presence ||
+            status_tag("no number on record", class: :warning)
+        end
         row :location_description
         row(:capture_source) { |h| h.capture_source.humanize }
         row :last_confirmed_on

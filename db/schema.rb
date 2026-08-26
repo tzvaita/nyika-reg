@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_202312) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,6 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
   create_table "households", force: :cascade do |t|
     t.integer "capture_source", default: 0, null: false
     t.bigint "captured_by_id"
+    t.string "contact_number"
     t.datetime "created_at", null: false
     t.date "last_confirmed_on"
     t.text "location_description"
@@ -102,6 +103,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
     t.datetime "verified_at"
     t.bigint "verified_by_id"
     t.index ["captured_by_id"], name: "index_households_on_captured_by_id"
+    t.index ["contact_number"], name: "index_households_on_contact_number"
     t.index ["name", "location_description"], name: "index_households_on_name_and_location"
     t.index ["reference"], name: "index_households_on_reference", unique: true
     t.index ["status"], name: "index_households_on_status"
@@ -139,6 +141,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
     t.boolean "active", default: true, null: false
     t.integer "age_band"
     t.string "contact_method"
+    t.string "contact_number"
     t.datetime "created_at", null: false
     t.bigint "household_id", null: false
     t.string "name", null: false
@@ -146,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
     t.integer "residency_status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.integer "year_of_birth"
+    t.index ["contact_number"], name: "index_people_on_contact_number"
     t.index ["household_id", "active"], name: "index_people_on_household_id_and_active"
     t.index ["household_id"], name: "index_people_on_household_id"
   end
@@ -199,6 +203,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
 
   create_table "registration_requests", force: :cascade do |t|
     t.string "contact_method"
+    t.string "contact_number"
     t.datetime "created_at", null: false
     t.datetime "handled_at"
     t.bigint "handled_by_id"
@@ -209,6 +214,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_201504) do
     t.text "outcome_note"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["contact_number"], name: "index_registration_requests_on_contact_number"
     t.index ["handled_by_id"], name: "index_registration_requests_on_handled_by_id"
     t.index ["household_id"], name: "index_registration_requests_on_household_id"
     t.index ["status"], name: "index_registration_requests_on_status"

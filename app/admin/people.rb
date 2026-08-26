@@ -52,6 +52,7 @@ ActiveAdmin.register Person do
       row("Age") { |p| p.age_band&.humanize || p.year_of_birth || "not recorded" }
       row(:residency_status) { |p| p.residency_status.humanize }
       row :contact_method
+      row("Reachable by message") { |p| p.contact_number.presence || "no number on record" }
       row(:active) { |p| status_tag(p.active? ? "Active" : "Inactive", class: p.active? ? :ok : :error) }
     end
 

@@ -1,5 +1,8 @@
 class Household < ApplicationRecord
   include Auditable
+  include Contactable
+
+  contact_source_attribute :principal_contact
 
   # Enum ordinals are persisted as integers: append only, never reorder.
   enum :status, {

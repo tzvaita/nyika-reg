@@ -1,5 +1,8 @@
 class RegistrationRequest < ApplicationRecord
   include Auditable
+  include Contactable
+
+  contact_source_attribute :contact_method
 
   enum :status, {
     new_request: 0,  # arrived from the website, nobody has looked yet

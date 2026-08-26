@@ -46,7 +46,7 @@ PaperTrail.request.whodunnit = registrar&.id.to_s
 
 DEMO_HOUSEHOLDS = [
   {
-    name: "Moyo homestead", contact: "Sekuru Moyo",
+    name: "Moyo homestead", contact: "Sekuru Moyo, 0771 234 567",
     location: "Third homestead past the borehole, along the footpath",
     source: :assisted_visit, status: :verified,
     people: [
@@ -62,7 +62,7 @@ DEMO_HOUSEHOLDS = [
     ]
   },
   {
-    name: "Ncube homestead", contact: "Mai Ncube",
+    name: "Ncube homestead", contact: "Mai Ncube, 0712 345 678",
     location: "Next to the primary school, blue gate",
     source: :community_event, status: :pending,
     people: [
@@ -73,7 +73,7 @@ DEMO_HOUSEHOLDS = [
     ]
   },
   {
-    name: "Chikwanha homestead", contact: "Baba Chikwanha",
+    name: "Chikwanha homestead", contact: "Baba Chikwanha, ask at the shop",
     location: "Beyond the dip tank, last homestead before the river",
     source: :assisted_visit, status: :draft,
     people: [
