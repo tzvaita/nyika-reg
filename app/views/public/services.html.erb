@@ -1,0 +1,62 @@
+<% content_for :title, "What we do — Nyika Village Registry" %>
+
+<section class="bg-nyika-ink text-white">
+  <div class="mx-auto max-w-5xl px-4 py-14">
+    <h1 class="text-3xl font-bold sm:text-4xl">What the register is for</h1>
+    <p class="mt-4 max-w-2xl text-lg text-white/85">
+      Each of these attaches to the same household record, so a family never
+      starts from the beginning again.
+    </p>
+  </div>
+</section>
+
+<section class="mx-auto max-w-5xl px-4 py-14">
+  <%# Honesty about what actually exists matters more here than a full-looking
+      page. Three of these five are designed for and not built, and a household
+      that registers expecting them would be right to feel misled. %>
+  <div class="grid gap-5 sm:grid-cols-2">
+    <% [
+         { title: "Government support",
+           body: "BEAM school assistance, drought relief and similar programmes. The village office opens a case, records what evidence is needed, and tracks what the programme decides.",
+           live: true },
+         { title: "Community funds",
+           body: "Building funds, emergency relief, materials and labour — with a target, an approved account, receipts, and totals anyone can check.",
+           live: true },
+         { title: "Insurance premiums",
+           body: "Funeral or livestock cover with reminders before payments fall due.",
+           live: false },
+         { title: "Agriculture and markets",
+           body: "Inputs, outgrower schemes and getting produce to market together.",
+           live: false },
+         { title: "Village services",
+           body: "Reporting issues, meeting attendance and local notices.",
+           live: false }
+       ].each do |service| %>
+      <article class="rounded-2xl bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <h2 class="font-bold text-nyika-ink"><%= service[:title] %></h2>
+          <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium
+                       <%= service[:live] ? "bg-emerald-100 text-emerald-900" : "bg-slate-100 text-slate-600" %>">
+            <%= service[:live] ? "Available now" : "Planned" %>
+          </span>
+        </div>
+        <p class="mt-3 text-slate-700"><%= service[:body] %></p>
+      </article>
+    <% end %>
+  </div>
+
+  <p class="mt-8 max-w-2xl text-sm text-slate-600">
+    Anything marked <strong>planned</strong> is not built yet. We would rather say
+    so than have a household register expecting something that does not exist.
+  </p>
+
+  <div class="mt-12 rounded-2xl bg-white p-8 shadow-sm">
+    <h2 class="text-xl font-bold text-nyika-ink">What the register does not do</h2>
+    <ul class="mt-4 space-y-2 text-slate-700">
+      <li>It does not decide who gets government support. Government decides; we help you apply and record what they say.</li>
+      <li>It does not hold your money. Payments go to an approved account or collector, and we record the receipt.</li>
+      <li>It does not record who owns which land.</li>
+      <li>It is not used for political fundraising.</li>
+    </ul>
+  </div>
+</section>

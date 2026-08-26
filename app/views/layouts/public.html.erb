@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Nyika Village Registry" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Nyika Village Registry — register once, access programmes, and see exactly where community contributions go.">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%# System fonts only. A downloaded web font is a slow first render on the
+        cheap handsets and 2G connections this is actually read on. %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <%= render "shared/public_nav" %>
+
+    <main>
+      <% if flash[:alert].present? %>
+        <div class="mx-auto max-w-3xl px-4 pt-4">
+          <p class="rounded-lg bg-amber-100 px-4 py-3 text-sm text-amber-900"><%= flash[:alert] %></p>
+        </div>
+      <% end %>
+      <%= yield %>
+    </main>
+
+    <footer class="mt-16 border-t border-slate-200 bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-10 text-sm text-slate-600">
+        <p class="font-semibold text-nyika-ink">Nyika Village Registry</p>
+        <p class="mt-1 max-w-xl">
+          One household record. Many programmes. One history anyone can check.
+        </p>
+        <nav class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+          <%= link_to "What we do", services_path, class: "hover:text-nyika-ink" %>
+          <%= link_to "Where the money goes", campaigns_path, class: "hover:text-nyika-ink" %>
+          <%= link_to "How we protect your details", trust_path, class: "hover:text-nyika-ink" %>
+          <%= link_to "Ask to be registered", new_registration_request_path, class: "hover:text-nyika-ink" %>
+          <%= link_to "Village office sign in", new_user_session_path, class: "hover:text-nyika-ink" %>
+        </nav>
+        <p class="mt-6 text-xs text-slate-500">
+          This is a proof of concept running with example data.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -27,6 +27,11 @@ class Ability
     can :read, [ ProgrammeCase, CaseDocument ]
     can :read, [ MobilisationCampaign, Contribution, Receipt ]
 
+    # People asking to be registered. Whoever captures households works this
+    # queue; it holds contact details for people who have consented to nothing,
+    # so it is not for browsing.
+    can :read, RegistrationRequest
+
     can :read, PaperTrail::Version
     # ActiveAdmin authorises its own pages (the Dashboard is one), so without this
     # every role is denied the landing page.
@@ -76,6 +81,10 @@ class Ability
     cannot :verify_receipt, Receipt
     cannot :reconcile, Contribution
     cannot [ :create, :update ], MobilisationCampaign
+
+    # Capturing households is the registrar's job, so actioning the requests that
+    # ask for it is too.
+    can :update, RegistrationRequest
   end
 
   # Verifies households and manages accounts. Cannot deactivate registry records:
@@ -108,6 +117,8 @@ class Ability
     can :reconcile, Contribution
     can [ :create, :update ], Receipt
     can :verify_receipt, Receipt
+
+    can :update, RegistrationRequest
   end
 
   # Owns programme casework. Read-only on the registry itself: a programme
@@ -127,6 +138,9 @@ class Ability
     can :verify_evidence, CaseDocument
 
     cannot :read, [ MobilisationCampaign, Contribution, Receipt ]
+
+    # Not their queue, and it is contact data for people outside the register.
+    cannot :read, RegistrationRequest
   end
 
   # System administration. The only role that may soft-delete, and the only one

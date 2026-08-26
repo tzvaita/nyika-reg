@@ -1,0 +1,80 @@
+<% content_for :title, "Ask to be registered — Nyika Village Registry" %>
+
+<section class="bg-nyika-ink text-white">
+  <div class="mx-auto max-w-3xl px-4 py-14">
+    <h1 class="text-3xl font-bold sm:text-4xl">Ask to be registered</h1>
+    <p class="mt-4 text-lg text-white/85">
+      Leave your name and how to reach you. Someone from the village office will
+      come and see you, explain what the register is for, and take your details
+      properly.
+    </p>
+  </div>
+</section>
+
+<section class="mx-auto max-w-3xl px-4 py-14">
+  <div class="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+    <p class="text-slate-700">
+      This form does <strong>not</strong> register you. It only tells the office
+      you would like to be registered — nothing about your household is recorded
+      until you have spoken to someone and agreed to it.
+    </p>
+
+    <%= form_with model: @registration_request, url: registration_requests_path,
+                  class: "mt-6 space-y-5" do |f| %>
+      <% if @registration_request.errors.any? %>
+        <div class="rounded-xl bg-red-100 p-4 text-sm text-red-900">
+          <p class="font-semibold">Please check the following:</p>
+          <ul class="mt-1 list-disc pl-5">
+            <% @registration_request.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :name, "Your name", class: "block text-sm font-medium text-slate-700" %>
+        <%= f.text_field :name, autocomplete: "name",
+                         class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+        <p class="mt-1 text-xs text-slate-500">Who the office should ask for.</p>
+      </div>
+
+      <div>
+        <%= f.label :contact_method, "Phone number", class: "block text-sm font-medium text-slate-700" %>
+        <%= f.text_field :contact_method, inputmode: "tel", autocomplete: "tel",
+                         class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+      </div>
+
+      <div>
+        <%= f.label :location_hint, "Where can we find you?", class: "block text-sm font-medium text-slate-700" %>
+        <%= f.text_field :location_hint,
+                         placeholder: "e.g. third homestead past the borehole",
+                         class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+        <p class="mt-1 text-xs text-slate-500">
+          In words, as you would tell a neighbour. A phone number or this — either is enough.
+        </p>
+      </div>
+
+      <div>
+        <%= f.label :note, "Anything else? (optional)", class: "block text-sm font-medium text-slate-700" %>
+        <%= f.text_area :note, rows: 3,
+                        class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" %>
+      </div>
+
+      <%# Honeypot. Hidden from people, irresistible to bots. %>
+      <div class="hidden" aria-hidden="true">
+        <label for="website">Website</label>
+        <%= text_field_tag :website, nil, tabindex: -1, autocomplete: "off" %>
+      </div>
+
+      <%= f.submit "Send my request",
+                   class: "w-full rounded-xl bg-nyika-accent px-6 py-4 text-base font-semibold text-white" %>
+    <% end %>
+
+    <p class="mt-6 text-xs text-slate-500">
+      We keep your name and contact details only so the office can get in touch.
+      If nothing comes of it, the request is removed after
+      <%= RegistrationRequest::RETENTION_DAYS %> days.
+    </p>
+  </div>
+</section>

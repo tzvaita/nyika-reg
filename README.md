@@ -43,6 +43,60 @@ These are structural, not policy notes. Changes that break them are defects, and
   against the `role` on the user. A registrar cannot verify their own capture;
   verification is a second pair of eyes.
 
+## The public website
+
+`/` is a real public site, not a placeholder: what the register is for, live
+campaign totals, the trust guarantees in plain language, and a way to ask to be
+registered.
+
+**What is public:** what the platform does; the trust rules; each campaign's
+name, purpose, target, amount raised and the approved account to pay into.
+
+**What is never public:** any household or person name, reference, location or
+contact; anything at all about programme cases; and specifically **who
+contributed and who did not**. Publishing contributor lists is a real village
+practice and it turns the register into an instrument of social pressure.
+`test/integration/public_site_test.rb` asserts this against seeded data rather
+than trusting the templates.
+
+`/services` marks three of its five areas **Planned** rather than implying they
+exist. A household that registers expecting insurance and finds nothing is the
+trust failure the whole project is trying to avoid.
+
+### Asking to be registered
+
+`/register` is the only place the public can write, and it creates a
+`RegistrationRequest` — never a household, a person or a consent record. A
+registrar visits or calls, explains what registration means, takes consent
+properly, and only then captures a record.
+
+Requests hold contact details for someone who has consented to nothing, so they
+are field-minimised (a name, a way to reach them, nothing else) and carry a
+retention rule: `RegistrationRequest::RETENTION_DAYS` (90), after which an
+unactioned request shows as stale in the queue and should be cleared.
+
+The endpoint has a honeypot and Rails' `rate_limit` (5/hour), and `/h/:token` is
+rate limited too (60/min). Both use `Rails.cache`, which is per-process memory
+here — speed bumps, not protection. Real moderation happens in the queue, which
+is why requests are inert by design.
+
+### Interactivity
+
+Three small Stimulus controllers, all progressive enhancement — the site works
+with JavaScript off:
+
+- **`progress`** animates a campaign's bar and counts the raised figure up once
+  on view. The bar is rendered at its true width server-side, so without JS it is
+  simply correct rather than animated. Respects `prefers-reduced-motion`.
+- **`clipboard`** copies the approved account so a resident pastes it into
+  EcoCash instead of retyping digits — the fewer digits retyped, the fewer
+  payments go astray. The number stays plain selectable text.
+- **`nav`** toggles the mobile menu, which is present in the markup and hidden on
+  connect.
+
+No web fonts and no photography, deliberately: this is read on cheap handsets
+over 2G, and a downloaded font is a slow first render for exactly that reader.
+
 ## How residents use it
 
 The resident menu from the concept deck, all six items, all behind one link:
@@ -103,7 +157,10 @@ bin/rails server
 
 | where | what |
 |---|---|
-| `/` | public landing page — shows no registry data |
+| `/` | public website — what the platform does |
+| `/campaigns` | live campaign totals, public |
+| `/trust` | how personal details are protected |
+| `/register` | ask to be registered |
 | `/admin` | registrar and administrator workspace |
 | `/capture/households/new` | assisted capture, mobile-first, signed in |
 | `/h/<token>` | a household's own record, no account needed |

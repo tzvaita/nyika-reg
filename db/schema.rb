@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_175550) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_184016) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -197,6 +197,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_175550) do
     t.index ["verified_by_id"], name: "index_receipts_on_verified_by_id"
   end
 
+  create_table "registration_requests", force: :cascade do |t|
+    t.string "contact_method"
+    t.datetime "created_at", null: false
+    t.datetime "handled_at"
+    t.bigint "handled_by_id"
+    t.bigint "household_id"
+    t.string "location_hint"
+    t.string "name", null: false
+    t.text "note"
+    t.text "outcome_note"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["handled_by_id"], name: "index_registration_requests_on_handled_by_id"
+    t.index ["household_id"], name: "index_registration_requests_on_household_id"
+    t.index ["status"], name: "index_registration_requests_on_status"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -246,4 +263,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_175550) do
   add_foreign_key "receipts", "contributions"
   add_foreign_key "receipts", "users", column: "captured_by_id"
   add_foreign_key "receipts", "users", column: "verified_by_id"
+  add_foreign_key "registration_requests", "households"
+  add_foreign_key "registration_requests", "users", column: "handled_by_id"
 end

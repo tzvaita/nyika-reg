@@ -9,7 +9,7 @@ module Auditable
 
   # Where a change came from. Recorded on every version so assisted edits can be
   # told apart from ones a household made itself.
-  SOURCE_CHANNELS = %w[admin assisted resident_link seed system].freeze
+  SOURCE_CHANNELS = %w[admin assisted resident_link public_site seed system].freeze
 
   included do
     # Both are set on the instance before saving and stored on the version row.

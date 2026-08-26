@@ -34,7 +34,16 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # A plain landing page. It deliberately shows no registry data — an unauthenticated
-  # visitor should learn nothing about who lives in the village.
-  root "registry#index"
+  # The public website. Shows what the platform does, the trust rules and live
+  # campaign totals — and no personal data whatsoever.
+  root "public#home"
+  get "services", to: "public#services"
+  get "campaigns", to: "public#campaigns"
+  get "trust",    to: "public#trust"
+
+  # The only place the public can write. It creates a request for a registrar to
+  # action, never a registry record. Written out rather than `resources` so the
+  # form lives at /register itself, which is what anyone would type or be told.
+  get  "register", to: "registration_requests#new",    as: :new_registration_request
+  post "register", to: "registration_requests#create", as: :registration_requests
 end

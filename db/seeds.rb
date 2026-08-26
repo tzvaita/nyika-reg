@@ -268,3 +268,25 @@ if MobilisationCampaign.none? && admin
   puts "Seeded #{MobilisationCampaign.count} campaign, #{Contribution.count} contributions, " \
        "#{Receipt.count} receipts."
 end
+
+# ---------------------------------------------------------------------------
+# A couple of registration requests, so the queue is not empty in the demo.
+# ---------------------------------------------------------------------------
+if RegistrationRequest.none?
+  [
+    { name: "Tendai Marimo", contact: "0771234567",
+      location: "Past the school, second homestead on the left",
+      note: "Heard about the register at the village meeting." },
+    { name: "Grace Sibanda", contact: nil,
+      location: "Near the dip tank, homestead with the green door",
+      note: "No phone — please visit." }
+  ].each do |spec|
+    RegistrationRequest.create!(
+      name: spec[:name], contact_method: spec[:contact],
+      location_hint: spec[:location], note: spec[:note],
+      change_reason: "Demo data", audit_source_channel: "seed"
+    )
+  end
+
+  puts "Seeded #{RegistrationRequest.count} registration requests."
+end

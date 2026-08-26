@@ -138,15 +138,21 @@ class ResidentMenuTest < ActionDispatch::IntegrationTest
   test "a household sees only its own applications, pledges and receipts" do
     other = Household.create!(name: "Ncube homestead", capture_source: :assisted_visit,
                               change_reason: "capture")
-    ProgrammeCase.create!(household: other, programme_type: :drought_relief, change_reason: "x")
-    Contribution.create!(mobilisation_campaign: @campaign, household: other,
-                         contribution_kind: :money, amount: 99, change_reason: "x")
+    other_case = ProgrammeCase.create!(household: other, programme_type: :drought_relief,
+                                       change_reason: "x")
+    other_contribution = Contribution.create!(mobilisation_campaign: @campaign, household: other,
+                                              contribution_kind: :money, amount: 99,
+                                              change_reason: "x")
 
     get resident_applications_path(token: @token)
     assert_no_match(/Ncube/, response.body)
+    assert_no_match(/#{other_case.reference}/, response.body)
 
     get resident_receipts_path(token: @token)
-    assert_no_match(/99/, response.body)
+    assert_no_match(/Ncube/, response.body)
+    # Match on the reference, not the bare amount: "99" also appears in asset
+    # fingerprints, which made this assertion fail on a page that was correct.
+    assert_no_match(/#{other_contribution.reference}/, response.body)
   end
 
   test "an unverified receipt is shown as still being checked, not hidden" do

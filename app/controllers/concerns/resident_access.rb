@@ -10,6 +10,14 @@ module ResidentAccess
 
   included do
     skip_before_action :authenticate_user!, raise: false
+
+    # The token is unguessable, but the endpoint is public, so brute-forcing it
+    # should at least be slow. A speed bump rather than a wall: Rails.cache is
+    # per-process memory here, so this does not survive a restart or coordinate
+    # across processes.
+    rate_limit to: 60, within: 1.minute,
+               with: -> { head :too_many_requests }
+
     before_action :load_household
     helper_method :resident_household
   end

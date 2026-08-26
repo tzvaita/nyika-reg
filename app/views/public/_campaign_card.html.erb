@@ -1,0 +1,75 @@
+<%# A campaign as the public sees it: what it is for, and how it is going.
+    Deliberately no contributor names, and no count of who has or has not given —
+    publishing that turns the register into an instrument of social pressure. %>
+<%
+  percent = campaign.progress_percentage.to_f
+  received = campaign.received_amount.to_i
+%>
+<article class="flex flex-col rounded-2xl bg-white p-6 shadow-sm"
+         data-controller="progress"
+         data-progress-percent-value="<%= percent %>"
+         data-progress-amount-value="<%= received %>"
+         data-progress-prefix-value="<%= campaign.currency %> ">
+  <div class="flex items-start justify-between gap-3">
+    <h3 class="font-bold text-nyika-ink"><%= campaign.name %></h3>
+    <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium
+                 <%= campaign.approved_obligation? ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900" %>">
+      <%= campaign.approved_obligation? ? "Agreed" : "Voluntary" %>
+    </span>
+  </div>
+
+  <% if campaign.purpose.present? %>
+    <p class="mt-2 text-sm text-slate-600"><%= campaign.purpose %></p>
+  <% end %>
+
+  <% if campaign.target_amount.present? %>
+    <div class="mt-5">
+      <div class="flex items-baseline justify-between gap-2">
+        <p class="text-2xl font-bold text-nyika-ink" data-progress-target="amount">
+          <%# Rendered server-side at the real figure, so with JavaScript off it
+              is simply correct rather than animated. %>
+          <%= campaign.currency %> <%= number_with_delimiter(received) %>
+        </p>
+        <p class="text-sm text-slate-500">
+          of <%= campaign.currency %> <%= number_with_delimiter(campaign.target_amount.to_i) %>
+        </p>
+      </div>
+
+      <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+        <div class="h-2.5 rounded-full bg-nyika-accent"
+             data-progress-target="bar"
+             style="width: <%= [ percent, 100 ].min %>%"></div>
+      </div>
+      <p class="mt-2 text-xs text-slate-500"><%= percent %>% of the target so far</p>
+    </div>
+  <% elsif campaign.target_description.present? %>
+    <p class="mt-5 text-sm text-slate-700">
+      Needed: <strong><%= campaign.target_description %></strong>
+    </p>
+  <% end %>
+
+  <% unless local_assigns[:compact] %>
+    <div class="mt-5 rounded-xl bg-slate-100 p-4"
+         data-controller="clipboard">
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pay only to</p>
+      <p class="mt-1 font-medium text-slate-900"><%= campaign.receiving_account_name %></p>
+      <div class="mt-1 flex items-start justify-between gap-3">
+        <p class="text-sm text-slate-700" data-clipboard-target="source"><%= campaign.receiving_account_detail %></p>
+        <button type="button" data-action="clipboard#copy" data-clipboard-target="button"
+                class="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium">
+          Copy
+        </button>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">
+        If anyone asks you to pay somewhere else, check with the village office first.
+      </p>
+    </div>
+
+    <% if campaign.closes_on.present? %>
+      <p class="mt-4 text-xs text-slate-500">
+        <%= campaign.closes_on.past? ? "Closed" : "Closes" %>
+        <%= campaign.closes_on.strftime("%d %B %Y") %>
+      </p>
+    <% end %>
+  <% end %>
+</article>
