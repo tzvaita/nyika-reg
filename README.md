@@ -5,19 +5,24 @@ A household registry for Nyika village. The guiding principle is
 once, and later programmes, campaigns and contributions attach to that single
 record over time, with a full audit trail.
 
-This repository is the **registry core** — the foundation later modules attach to.
-
 ## Scope
 
-In scope: Household / Person / ConsentRecord, an immutable audit trail, the
-verification queue (draft → pending → verified), role-based access, the registrar
-workspace, assisted capture, the resident update link, and the pilot exports and
+All nine entities from the brief's minimum data model exist: Household, Person,
+Consent record, Programme case, Document record, Mobilisation campaign,
+Contribution record, Receipt record and the Audit event.
+
+Built: the registry and its verification queue, purpose-specific consent, the
+immutable audit trail, role-based access, the registrar workspace, assisted
+capture, the full six-item resident menu, one government-support workflow, one
+mobilisation campaign with reconciliation, and the pilot exports and
 data-quality report.
 
-Out of scope for now, and deliberately so: the programme case workflow, the
-mobilisation ledger, payment reconciliation, WhatsApp/SMS/USSD messaging, plot
-records and political contribution flows. The last two are excluded by the brief
-itself, not merely deferred.
+**Not built:** WhatsApp/SMS messaging — its own work package in the brief, gated
+on provider contracting. Resident links are therefore sent by hand.
+
+**Excluded by the brief itself, not merely deferred:** plot and occupancy
+records, political contribution flows, USSD, and direct payment-provider API
+integration before provider approval.
 
 ## Governance rules
 
