@@ -82,7 +82,8 @@ ActiveAdmin.register RegistrationRequest do
 
   action_item :capture, only: :show,
               if: -> { !resource.captured? && authorized?(:create, Household) } do
-    link_to "Capture this household", new_capture_household_path,
+    link_to "Capture this household",
+            new_capture_household_path(registration_request_id: resource.id),
             class: "button"
   end
 

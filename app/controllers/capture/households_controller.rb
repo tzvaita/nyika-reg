@@ -12,6 +12,7 @@ module Capture
 
     def new
       @household = Household.new(capture_source: :assisted_visit)
+      prefill_from_request
       @household.people.build
       authorize! :create, @household
     end
@@ -19,10 +20,11 @@ module Capture
     def create
       @household = Household.new(household_params)
       @household.captured_by = current_user
-      @household.change_reason = "Captured on an assisted visit"
+      @household.change_reason = capture_reason
       authorize! :create, @household
 
       if @household.save
+        close_registration_request
         redirect_to edit_capture_household_path(@household),
                     notice: "Household #{@household.reference} captured. Add members, then submit it."
       else
@@ -66,6 +68,37 @@ module Capture
       else
         redirect_to edit_capture_household_path(@household), notice: "Saved."
       end
+    end
+
+    # Set when arriving from the registration queue, so the capture starts from
+    # what the household already told us rather than a blank form.
+    def registration_request
+      @registration_request ||=
+        RegistrationRequest.find_by(id: params[:registration_request_id])
+    end
+
+    def prefill_from_request
+      return if registration_request.blank?
+
+      @household.principal_contact = [ registration_request.name,
+                                       registration_request.contact_method ].compact_blank.join(", ")
+      @household.location_description = registration_request.location_hint
+      @household.capture_source = :self_reported
+    end
+
+    def capture_reason
+      return "Captured on an assisted visit" if registration_request.blank?
+
+      "Captured from registration request ##{registration_request.id}"
+    end
+
+    # Closes the loop: the request moves to `captured` and points at the record
+    # it produced. Without this the queue fills with requests that look
+    # unhandled long after somebody dealt with them.
+    def close_registration_request
+      return if registration_request.blank?
+
+      registration_request.mark_captured!(household: @household, by: current_user)
     end
 
     def household_params

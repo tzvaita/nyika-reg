@@ -11,6 +11,6 @@
 
 <%= render "capture/households/form",
            household: @household,
-           url: capture_households_path,
+           url: capture_households_path(registration_request_id: params[:registration_request_id]),
            method: :post,
            submit_label: "Save household" %>
