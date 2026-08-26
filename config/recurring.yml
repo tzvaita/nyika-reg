@@ -1,0 +1,32 @@
+# examples:
+#   periodic_cleanup:
+#     class: CleanSoftDeletedRecordsJob
+#     queue: background
+#     args: [ 1000, { batch_size: 500 } ]
+#     schedule: every hour
+#   periodic_cleanup_with_command:
+#     command: "SoftDeletedRecord.due.delete_all"
+#     priority: 2
+#     schedule: at 5am every day
+
+# The scheduler. Reminder triggers live here rather than in rake tasks somebody
+# has to remember to run.
+#
+# Every job listed must be IDEMPOTENT: a re-run, or an overlapping run after a
+# restart, must not message anyone twice. Each trigger checks the outbox for an
+# equivalent recent message before queueing another.
+#
+# Frequencies are deliberately low. Messages cost money per send and an
+# over-reminded household stops reading them, so these are set to nudge rather
+# than nag, and should be revisited with pilot evidence.
+
+default: &default
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+
+development:
+  <<: *default
+
+production:
+  <<: *default

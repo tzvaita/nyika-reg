@@ -56,6 +56,13 @@ services:
       - key: WEB_CONCURRENCY
         value: 1
 
+      # Run the Solid Queue worker INSIDE the web process. config/puma.rb already
+      # carries `plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]`, so background
+      # jobs and the recurring scheduler need no second Render service — which
+      # matters on a free plan that only allows one.
+      - key: SOLID_QUEUE_IN_PUMA
+        value: true
+
       # Log to stdout so entries show up in Render's log viewer.
       - key: RAILS_LOG_TO_STDOUT
         value: true

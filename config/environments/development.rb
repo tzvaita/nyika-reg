@@ -43,6 +43,14 @@ Rails.application.configure do
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
+  # Same job backend as production, so a job that works here works there.
+  config.active_job.queue_adapter = :solid_queue
+
+  # Same cache backend too. This is what makes the rate limiting on
+  # /register and /h/:token hold across processes rather than being
+  # per-process memory, and it should behave the same in development.
+  config.cache_store = :solid_cache_store
+
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 

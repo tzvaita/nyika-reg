@@ -318,6 +318,29 @@ Free-tier caveats worth knowing before sharing a link: the web service sleeps af
 inactivity, so the first request can take the better part of a minute, and free
 Postgres instances expire after a limited period. Check Render's current terms.
 
+## Background jobs and caching
+
+`solid_queue` and `solid_cache` run on the **primary database** — this deployment
+has one, so the generated `connects_to`/`database:` wiring for separate queue and
+cache databases was removed and their schemas became ordinary migrations.
+
+The worker runs **inside the web process** via `SOLID_QUEUE_IN_PUMA=true`
+(`config/puma.rb` already carries the plugin), so Render's free plan needs no
+second service. `config/recurring.yml` is the scheduler.
+
+Two consequences worth knowing:
+
+- **Jobs survive a restart.** They are rows in the database, not entries in an
+  in-process thread pool, so nothing is lost when a free instance sleeps.
+- **Rate limiting is real.** `Rails.cache` is database-backed, so the limits on
+  `/register` and `/h/:token` hold across processes and restarts rather than
+  being per-process memory.
+
+```bash
+bin/jobs                      # run a worker on its own
+bin/rails solid_queue:check   # validate the configuration
+```
+
 ## Known limitations
 
 Worth stating plainly rather than discovering later:
@@ -334,6 +357,11 @@ Worth stating plainly rather than discovering later:
   and the descriptions are drafts. Real wording needs review before capture
   begins — consent that is not understood is not consent.
 - **Seeding on boot** (see Deploying) must be removed before real data.
+- **Duplicate programme cases are possible.** `ProgrammeCase` validates
+  uniqueness only on `reference`, so nothing stops a household holding two open
+  BEAM cases — observed in use. Known and deliberately left for now; it matters
+  more once requests can arrive over WhatsApp, where "did that send? let me try
+  again" is natural.
 
 ## Notes
 
