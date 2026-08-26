@@ -1,11 +1,37 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# One user per role, so tests can exercise the Ability matrix directly.
+<% encrypted = User.new(password: "fixture-password").encrypted_password %>
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the "{}" from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+registrar:
+  name: Rudo Registrar
+  email: registrar@example.test
+  encrypted_password: <%= encrypted %>
+  role: 0
+  active: true
+
+administrator:
+  name: Anesu Admin
+  email: administrator@example.test
+  encrypted_password: <%= encrypted %>
+  role: 1
+  active: true
+
+programme_manager:
+  name: Panashe Programme
+  email: programme@example.test
+  encrypted_password: <%= encrypted %>
+  role: 2
+  active: true
+
+tech_admin:
+  name: Tendai Tech
+  email: tech@example.test
+  encrypted_password: <%= encrypted %>
+  role: 3
+  active: true
+
+deactivated:
+  name: Former Registrar
+  email: former@example.test
+  encrypted_password: <%= encrypted %>
+  role: 0
+  active: false
