@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_202312) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_202806) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,6 +87,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_202312) do
     t.index ["status"], name: "index_contributions_on_status"
   end
 
+  create_table "conversations", force: :cascade do |t|
+    t.string "channel", default: "whatsapp", null: false
+    t.string "contact_number", null: false
+    t.jsonb "context", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.bigint "household_id"
+    t.datetime "last_message_at"
+    t.integer "message_count", default: 0, null: false
+    t.string "state", default: "idle", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_number", "channel"], name: "index_conversations_on_contact_number_and_channel", unique: true
+    t.index ["household_id"], name: "index_conversations_on_household_id"
+  end
+
   create_table "households", force: :cascade do |t|
     t.integer "capture_source", default: 0, null: false
     t.bigint "captured_by_id"
@@ -109,6 +123,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_202312) do
     t.index ["status"], name: "index_households_on_status"
     t.index ["token"], name: "index_households_on_token", unique: true
     t.index ["verified_by_id"], name: "index_households_on_verified_by_id"
+  end
+
+  create_table "inbound_messages", force: :cascade do |t|
+    t.text "body"
+    t.string "channel", default: "whatsapp", null: false
+    t.bigint "conversation_id"
+    t.datetime "created_at", null: false
+    t.string "from_number", null: false
+    t.string "handled_as"
+    t.text "handling_note"
+    t.bigint "household_id"
+    t.jsonb "payload", default: {}, null: false
+    t.string "provider_message_id"
+    t.datetime "received_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_inbound_messages_on_conversation_id"
+    t.index ["from_number"], name: "index_inbound_messages_on_from_number"
+    t.index ["household_id"], name: "index_inbound_messages_on_household_id"
+    t.index ["provider_message_id"], name: "index_inbound_messages_on_provider_message_id", unique: true
   end
 
   create_table "mobilisation_campaigns", force: :cascade do |t|
@@ -135,6 +168,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_202312) do
     t.index ["reference"], name: "index_mobilisation_campaigns_on_reference", unique: true
     t.index ["reporting_owner_id"], name: "index_mobilisation_campaigns_on_reporting_owner_id"
     t.index ["status"], name: "index_mobilisation_campaigns_on_status"
+  end
+
+  create_table "outbound_messages", force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.text "body", null: false
+    t.string "channel", default: "whatsapp", null: false
+    t.bigint "conversation_id"
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.boolean "disclosure", default: false, null: false
+    t.text "error_message"
+    t.bigint "household_id"
+    t.string "provider_message_id"
+    t.datetime "sent_at"
+    t.string "skip_reason"
+    t.integer "status", default: 0, null: false
+    t.string "template_key"
+    t.string "to_number", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_outbound_messages_on_conversation_id"
+    t.index ["household_id"], name: "index_outbound_messages_on_household_id"
+    t.index ["status"], name: "index_outbound_messages_on_status"
+    t.index ["template_key"], name: "index_outbound_messages_on_template_key"
+    t.index ["to_number"], name: "index_outbound_messages_on_to_number"
   end
 
   create_table "people", force: :cascade do |t|
@@ -418,10 +475,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_202312) do
   add_foreign_key "contributions", "households"
   add_foreign_key "contributions", "mobilisation_campaigns"
   add_foreign_key "contributions", "users", column: "recorded_by_id"
+  add_foreign_key "conversations", "households"
   add_foreign_key "households", "users", column: "captured_by_id"
   add_foreign_key "households", "users", column: "verified_by_id"
+  add_foreign_key "inbound_messages", "conversations"
+  add_foreign_key "inbound_messages", "households"
   add_foreign_key "mobilisation_campaigns", "users", column: "approved_by_id"
   add_foreign_key "mobilisation_campaigns", "users", column: "reporting_owner_id"
+  add_foreign_key "outbound_messages", "conversations"
+  add_foreign_key "outbound_messages", "households"
   add_foreign_key "people", "households"
   add_foreign_key "programme_cases", "households"
   add_foreign_key "programme_cases", "people", column: "beneficiary_id"

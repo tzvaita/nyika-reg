@@ -24,8 +24,11 @@ module Auditable
 
   # Defaults to "system" so a version is never written without a channel — an
   # unlabelled row would silently distort the pilot's update-rate figure.
+  # A channel set on the record wins over the request-level default, which wins
+  # over "system". A version is never written without one — an unlabelled row
+  # would quietly distort the pilot's update-rate figure.
   def audit_source_channel
-    @audit_source_channel.presence || PaperTrail.request.controller_info&.dig(:source_channel) || "system"
+    @audit_source_channel.presence || Current.audit_source_channel.presence || "system"
   end
 
   # The audit history, newest first.

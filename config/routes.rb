@@ -41,9 +41,14 @@ Rails.application.routes.draw do
   get "campaigns", to: "public#campaigns"
   get "trust",    to: "public#trust"
 
-  # The only place the public can write. It creates a request for a registrar to
-  # action, never a registry record. Written out rather than `resources` so the
-  # form lives at /register itself, which is what anyone would type or be told.
+  # The only place the public can write over the web. It creates a request for a
+  # registrar to action, never a registry record. Written out rather than
+  # `resources` so the form lives at /register itself, which is what anyone would
+  # type or be told.
   get  "register", to: "registration_requests#new",    as: :new_registration_request
   post "register", to: "registration_requests#create", as: :registration_requests
+
+  # Inbound WhatsApp. Unauthenticated by nature — the provider's signature is the
+  # control, and it is verified before the payload is read.
+  post "webhooks/whatsapp", to: "webhooks/whatsapp#create"
 end

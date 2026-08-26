@@ -66,3 +66,19 @@ services:
       # Log to stdout so entries show up in Render's log viewer.
       - key: RAILS_LOG_TO_STDOUT
         value: true
+
+      # WhatsApp. Leave MESSAGING_ADAPTER as "log" until the Twilio values are
+      # filled in — the log adapter records what would have been sent, so the
+      # flow works either way.
+      - key: MESSAGING_ADAPTER
+        value: log
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        sync: false
+      # Only needed if signature verification fails because the URL Rails
+      # reconstructs differs from the one configured in Twilio.
+      - key: TWILIO_WEBHOOK_URL
+        sync: false

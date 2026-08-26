@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   # but stating it explicitly keeps the audit trail from silently going anonymous
   # if authentication is ever restructured.
   before_action :set_paper_trail_whodunnit
+  before_action :set_audit_source_channel
 
   # CanCanCan raises this when a role is not permitted to do something; without a
   # handler it would surface as a 500 instead of a refusal.
@@ -10,15 +11,19 @@ class ApplicationController < ActionController::Base
     redirect_back fallback_location: root_path, alert: exception.message
   end
 
-  # The channel every version written during this request is stamped with.
-  # Controllers serving residents override this; see HouseholdUpdatesController.
+  # The channel versions written during this request are stamped with, unless a
+  # record sets its own. Controllers serving residents override this; see
+  # HouseholdUpdatesController and Webhooks::WhatsappController.
+  #
+  # Deliberately NOT PaperTrail's controller_info: that is merged over the
+  # model's own metadata, so a record explicitly recording where it came from
+  # would be overwritten by the controller's default.
   def audit_source_channel
     "admin"
   end
 
-  # PaperTrail merges controller_info into each version's metadata.
-  def info_for_paper_trail
-    { source_channel: audit_source_channel }
+  def set_audit_source_channel
+    Current.audit_source_channel = audit_source_channel
   end
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
