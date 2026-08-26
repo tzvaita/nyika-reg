@@ -67,11 +67,15 @@ services:
       - key: RAILS_LOG_TO_STDOUT
         value: true
 
-      # WhatsApp. Leave MESSAGING_ADAPTER as "log" until the Twilio values are
-      # filled in — the log adapter records what would have been sent, so the
-      # flow works either way.
+      # WhatsApp. Set in the dashboard, NOT here: pinning a value would let a
+      # blueprint sync quietly revert "twilio" back to "log", and messages would
+      # stop being sent with nothing to show why.
+      #
+      # Unset behaves as "log" — the adapter records what would have been sent,
+      # so the flow works before any Twilio account exists. Set it to "twilio"
+      # once the credentials below are in place.
       - key: MESSAGING_ADAPTER
-        value: log
+        sync: false
       - key: TWILIO_ACCOUNT_SID
         sync: false
       - key: TWILIO_AUTH_TOKEN
