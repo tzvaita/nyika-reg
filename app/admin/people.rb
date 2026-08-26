@@ -17,6 +17,21 @@ ActiveAdmin.register Person do
   filter :residency_status, as: :select, collection: -> { Person.residency_statuses.keys.map { |r| [ r.humanize, r ] } }
   filter :active
 
+  # Note there is no date of birth to export: the registry does not hold one.
+  csv do
+    column("Household") { |p| p.household.reference }
+    column :name
+    column(:relationship)
+    column(:age_band)
+    column :year_of_birth
+    column(:residency_status)
+    column :contact_method
+    column :active
+    ConsentRecord.purposes.keys.each do |purpose|
+      column("Consent: #{purpose.humanize}") { |person| person.consented_to?(purpose) }
+    end
+  end
+
   index do
     selectable_column
     column(:name) { |p| link_to p.name, admin_person_path(p) }

@@ -18,6 +18,20 @@ ActiveAdmin.register ConsentRecord do
   filter :consent_version
   filter :granted_on
 
+  # One row per consent, never a rolled-up "consented" column — the export must
+  # not be able to imply blanket consent that was never given.
+  csv do
+    column("Household") { |c| c.person.household.reference }
+    column("Person")    { |c| c.person.name }
+    column(:purpose)
+    column :consent_version
+    column(:channel)
+    column :granted_on
+    column("Withdrawn") { |c| c.withdrawn? }
+    column :withdrawn_at
+    column(:recorded_by) { |c| c.recorded_by&.display_name }
+  end
+
   index do
     selectable_column
     column(:person) { |c| link_to c.person.name, admin_person_path(c.person) }

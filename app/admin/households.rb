@@ -37,6 +37,30 @@ ActiveAdmin.register Household do
     actions
   end
 
+  # Pilot summary export. Deliberately excludes the resident token — a CSV gets
+  # mailed around, and every token in it is a working key to that household.
+  csv do
+    column :reference
+    column :name
+    column :status
+    column :principal_contact
+    column :location_description
+    column(:capture_source) { |h| h.capture_source }
+    column("Members") { |h| h.active_people.count }
+    column("Missing fields") { |h| h.missing_required_fields.join(" ") }
+    column("Complete") { |h| h.complete? }
+    column(:captured_by) { |h| h.captured_by&.display_name }
+    column(:verified_by) { |h| h.verified_by&.display_name }
+    column :verified_at
+    column :last_confirmed_on
+    column :created_at
+    ConsentRecord.purposes.keys.each do |purpose|
+      column("Consent: #{purpose.humanize}") do |household|
+        household.active_people.count { |person| person.consented_to?(purpose) }
+      end
+    end
+  end
+
   show do
     panel "Household" do
       attributes_table_for resource do
