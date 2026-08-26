@@ -104,6 +104,44 @@ npm run build:css
 The Tailwind sources are excluded from the asset load path so Propshaft serves
 the compiled files rather than the raw `@import`.
 
+## Programme cases
+
+One government-support workflow, following the deck's five stages: identify →
+consent → evidence → submit → outcome. Programme types are BEAM, drought relief,
+disability support and other support.
+
+A case **cannot be submitted** until three things are true, and the case screen
+lists whichever are outstanding:
+
+1. everyone it covers has consented to `programme` — the consent model gating
+   something real, not a box ticked once;
+2. every required document for that programme has been sighted **and verified by
+   someone other than whoever recorded it**;
+3. the household itself has been verified.
+
+Eligibility checks are **prompts, not refusals**. The platform supports
+applications and records outcomes; it does not replace government decision
+authority, so a case with eligibility queries can still proceed.
+
+### Sensitive data
+
+The brief permits health, disability, children and financial data inside a
+programme case with restricted access. **This build captures none of it.** A case
+records that a document was sighted, of what type, by whom, and where it is
+stored — never what it contained. `test/models/governance_test.rb` covers the case
+models too, so that stays true by accident-proofing rather than good intentions.
+
+Document records hold **metadata and a link only**. No files are uploaded, and
+identity document images are never stored.
+
+### Who can see casework
+
+A **registrar cannot see programme cases at all** — not the screens, not the CSV,
+not the dashboard panels, not even the menu items. A case reveals that a family
+sought welfare support, which is exactly the kind of thing that must not circulate
+around a village. Administrators and programme managers run casework; a tech admin
+can administer cases but deliberately cannot submit one or decide an outcome.
+
 ## Reports
 
 ```bash

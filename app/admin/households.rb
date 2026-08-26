@@ -22,14 +22,14 @@ ActiveAdmin.register Household do
   filter :capture_source, as: :select, collection: -> { Household.capture_sources.keys.map { |s| [ s.humanize, s ] } }
   filter :created_at
 
-  STATUS_COLOURS = { "draft" => :orange, "pending" => :warning,
+  HOUSEHOLD_STATUS_COLOURS = { "draft" => :orange, "pending" => :warning,
                      "verified" => :ok, "inactive" => :error }.freeze
 
   index do
     selectable_column
     column :reference
     column :name
-    column(:status) { |h| status_tag h.status.humanize, class: STATUS_COLOURS[h.status] }
+    column(:status) { |h| status_tag h.status.humanize, class: HOUSEHOLD_STATUS_COLOURS[h.status] }
     column :principal_contact
     column("Members") { |h| h.active_people.count }
     column("Complete") { |h| h.complete? ? status_tag("Yes", class: :ok) : status_tag(h.missing_required_fields.map(&:humanize).join(", "), class: :error) }
@@ -66,7 +66,7 @@ ActiveAdmin.register Household do
       attributes_table_for resource do
         row :reference
         row :name
-        row(:status) { |h| status_tag h.status.humanize, class: STATUS_COLOURS[h.status] }
+        row(:status) { |h| status_tag h.status.humanize, class: HOUSEHOLD_STATUS_COLOURS[h.status] }
         row :principal_contact
         row :location_description
         row(:capture_source) { |h| h.capture_source.humanize }

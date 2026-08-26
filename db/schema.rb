@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_134702) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_144441) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,6 +26,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_134702) do
     t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
     t.index ["namespace"], name: "index_active_admin_comments_on_namespace"
     t.index ["resource_type", "resource_id"], name: "index_active_admin_comments_on_resource"
+  end
+
+  create_table "case_documents", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "document_type", null: false
+    t.bigint "documentable_id", null: false
+    t.string "documentable_type", null: false
+    t.string "file_link"
+    t.text "note"
+    t.date "sighted_on"
+    t.datetime "updated_at", null: false
+    t.bigint "uploaded_by_id"
+    t.integer "verification_status", default: 0, null: false
+    t.datetime "verified_at"
+    t.bigint "verified_by_id"
+    t.index ["documentable_type", "documentable_id", "document_type"], name: "index_case_documents_on_documentable_and_type"
+    t.index ["documentable_type", "documentable_id"], name: "index_case_documents_on_documentable"
+    t.index ["uploaded_by_id"], name: "index_case_documents_on_uploaded_by_id"
+    t.index ["verified_by_id"], name: "index_case_documents_on_verified_by_id"
   end
 
   create_table "consent_records", force: :cascade do |t|
@@ -81,6 +100,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_134702) do
     t.index ["household_id"], name: "index_people_on_household_id"
   end
 
+  create_table "programme_cases", force: :cascade do |t|
+    t.bigint "beneficiary_id"
+    t.datetime "created_at", null: false
+    t.bigint "household_id", null: false
+    t.bigint "opened_by_id"
+    t.date "opened_on", null: false
+    t.integer "outcome"
+    t.text "outcome_note"
+    t.datetime "outcome_recorded_at"
+    t.integer "programme_type", null: false
+    t.string "reference", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "submitted_at"
+    t.bigint "submitted_by_id"
+    t.datetime "updated_at", null: false
+    t.index ["beneficiary_id"], name: "index_programme_cases_on_beneficiary_id"
+    t.index ["household_id", "programme_type"], name: "index_programme_cases_on_household_id_and_programme_type"
+    t.index ["household_id"], name: "index_programme_cases_on_household_id"
+    t.index ["opened_by_id"], name: "index_programme_cases_on_opened_by_id"
+    t.index ["reference"], name: "index_programme_cases_on_reference", unique: true
+    t.index ["status"], name: "index_programme_cases_on_status"
+    t.index ["submitted_by_id"], name: "index_programme_cases_on_submitted_by_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -111,9 +154,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_134702) do
     t.index ["source_channel"], name: "index_versions_on_source_channel"
   end
 
+  add_foreign_key "case_documents", "users", column: "uploaded_by_id"
+  add_foreign_key "case_documents", "users", column: "verified_by_id"
   add_foreign_key "consent_records", "people"
   add_foreign_key "consent_records", "users", column: "recorded_by_id"
   add_foreign_key "households", "users", column: "captured_by_id"
   add_foreign_key "households", "users", column: "verified_by_id"
   add_foreign_key "people", "households"
+  add_foreign_key "programme_cases", "households"
+  add_foreign_key "programme_cases", "people", column: "beneficiary_id"
+  add_foreign_key "programme_cases", "users", column: "opened_by_id"
+  add_foreign_key "programme_cases", "users", column: "submitted_by_id"
 end

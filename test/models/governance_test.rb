@@ -14,7 +14,12 @@ class GovernanceTest < ActiveSupport::TestCase
     "full date of birth"  => /date_of_birth|birth_date|\Adob\z/
   }.freeze
 
-  REGISTRY_MODELS = [ Household, Person, ConsentRecord, User ].freeze
+  # ProgrammeCase and CaseDocument are included deliberately. The brief permits
+  # health, disability, children and financial data inside a programme case with
+  # restricted access — but this build captures none of it, and this test is what
+  # stops that changing by accident rather than by decision.
+  REGISTRY_MODELS = [ Household, Person, ConsentRecord, User,
+                      ProgrammeCase, CaseDocument ].freeze
 
   test "no minimised field exists anywhere in the registry schema" do
     REGISTRY_MODELS.each do |model|
@@ -40,8 +45,34 @@ class GovernanceTest < ActiveSupport::TestCase
     end
   end
 
+  test "a programme case records what evidence was seen, never what it said" do
+    # The brief allows sensitive data inside a case; this build still does not
+    # hold it. A case says a document was sighted and verified — not its contents.
+    forbidden = %w[diagnosis condition medical_note income_amount disability_type
+                   assessment_result vulnerability_score]
+
+    (ProgrammeCase.column_names + CaseDocument.column_names).each do |column|
+      assert_not_includes forbidden, column,
+                          "#{column} would put sensitive content into the registry"
+    end
+  end
+
+  test "case evidence cannot be verified by whoever recorded it" do
+    household = Household.create!(name: "Case governance", capture_source: :assisted_visit,
+                                  change_reason: "test")
+    programme_case = ProgrammeCase.create!(household: household, programme_type: :drought_relief,
+                                           change_reason: "test")
+    document = programme_case.case_documents.create!(document_type: :household_confirmation,
+                                                     uploaded_by: users(:registrar))
+
+    assert_raises(ArgumentError) { document.verify!(by: users(:registrar)) }
+
+    document.verify!(by: users(:administrator))
+    assert document.reload.verified?
+  end
+
   test "every registry record is auditable" do
-    [ Household, Person, ConsentRecord ].each do |model|
+    [ Household, Person, ConsentRecord, ProgrammeCase, CaseDocument ].each do |model|
       assert model.reflect_on_association(:versions).present?,
              "#{model.name} must record versions"
       assert model.new.respond_to?(:change_reason), "#{model.name} must accept a change reason"

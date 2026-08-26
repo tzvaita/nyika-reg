@@ -71,6 +71,29 @@ class PilotReport
     }
   end
 
+  # Deck p11: "Case completion — cases opened, evidence received and outcomes
+  # logged". Reported separately from the registry counts because a case is a
+  # different kind of fact about a household.
+  def case_rows
+    [
+      [ "Cases opened", ProgrammeCase.count ],
+      [ "Awaiting consent or evidence", ProgrammeCase.awaiting_action.count ],
+      [ "Ready to submit", ProgrammeCase.submission_queue.count ],
+      [ "Submitted to a programme", ProgrammeCase.where(status: :submitted).count ],
+      [ "Closed with an outcome", ProgrammeCase.where(status: :closed).count ],
+      [ "Evidence recorded", CaseDocument.count ],
+      [ "Evidence verified", CaseDocument.verified.count ],
+      [ "Cases blocked only by missing consent",
+        ProgrammeCase.open_cases.count { |c| c.people_missing_consent.any? } ]
+    ]
+  end
+
+  def cases_by_outcome
+    ProgrammeCase.outcomes.keys.map do |outcome|
+      { outcome: outcome, count: ProgrammeCase.where(outcome: outcome).count }
+    end
+  end
+
   def summary_rows
     [
       [ "Households registered", Household.live.count ],

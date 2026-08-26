@@ -14,6 +14,24 @@ ActiveAdmin.register_page "Data quality" do
       end
     end
 
+    if authorized?(:read, ProgrammeCase)
+      panel "Programme cases" do
+        para "Deck: cases opened, evidence received and outcomes logged."
+        table_for report.case_rows do
+          column("Measure") { |row| row.first }
+          column("Value")   { |row| row.last }
+        end
+      end
+
+      panel "Case outcomes" do
+        para "Recorded, not decided: the programme office keeps its decision authority."
+        table_for report.cases_by_outcome do
+          column("Outcome") { |row| row[:outcome].humanize }
+          column("Cases")   { |row| row[:count] }
+        end
+      end
+    end
+
     panel "Resident self-service" do
       rate = report.update_rate
       para "The pilot has to report how many residents can update without "\

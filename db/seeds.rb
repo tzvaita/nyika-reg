@@ -146,3 +146,58 @@ end
 
 puts "Seeded #{Household.count} households, #{Person.count} people, " \
      "#{ConsentRecord.count} consent records."
+
+# ---------------------------------------------------------------------------
+# Demo programme cases, one at each stage, so the queues and the case dashboard
+# have something to show. Illustrative only.
+# ---------------------------------------------------------------------------
+if ProgrammeCase.none?
+  moyo  = Household.find_by(name: "Moyo homestead")
+  ncube = Household.find_by(name: "Ncube homestead")
+
+  # 1. A BEAM case blocked on consent — the most common real situation, and the
+  #    one that shows the consent model actually gating something.
+  if moyo
+    child = moyo.active_people.find { |p| p.age_band == "age_5_17" }
+    blocked = ProgrammeCase.create!(
+      household: moyo, beneficiary: child, programme_type: :beam,
+      opened_by: registrar, change_reason: "Demo data", audit_source_channel: "seed"
+    )
+    blocked.refresh_stage!(reason: "Stage set from consent and evidence on record")
+  end
+
+  # 2. A drought relief case that made it all the way to an outcome.
+  if ncube
+    ncube.active_people.each do |person|
+      person.update!(consent_purposes: (person.consent_purposes + %w[programme]).uniq,
+                     change_reason: "Agreed to be considered for support")
+    end
+
+    completed = ProgrammeCase.create!(
+      household: ncube, programme_type: :drought_relief,
+      opened_by: registrar, change_reason: "Demo data", audit_source_channel: "seed"
+    )
+
+    completed.required_document_types.each do |type|
+      document = completed.case_documents.create!(
+        document_type: type, uploaded_by: registrar,
+        note: "Sighted at the village office", change_reason: "Demo data",
+        audit_source_channel: "seed"
+      )
+      # Verified by someone other than whoever recorded it — the rule the model
+      # enforces, shown working in the demo data.
+      document.verify!(by: admin, reason: "Confirmed by the village office") if admin
+    end
+
+    completed.household.verify!(by: admin, reason: "Confirmed on site visit") if admin && completed.household.pending?
+    completed.reload.refresh_stage!(reason: "Evidence complete")
+
+    if admin && completed.submittable?
+      completed.submit!(by: admin)
+      completed.record_outcome!(outcome: :benefit_received,
+                                note: "Maize allocation collected at the village office")
+    end
+  end
+
+  puts "Seeded #{ProgrammeCase.count} programme cases, #{CaseDocument.count} evidence records."
+end

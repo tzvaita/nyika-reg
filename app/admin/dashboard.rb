@@ -31,6 +31,40 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
+    # Only rendered for roles allowed to see casework — a registrar must not
+    # learn from the dashboard that a family sought welfare support.
+    if authorized?(:read, ProgrammeCase)
+      panel "Programme cases needing attention" do
+        cases = ProgrammeCase.awaiting_action.order(:opened_on)
+
+        if cases.any?
+          table_for cases.limit(10) do
+            column("Case") { |c| link_to c.reference, admin_programme_case_path(c) }
+            column("Household") { |c| c.household.reference }
+            column("Programme") { |c| c.programme_type.humanize }
+            column("Waiting on") { |c| c.blockers.first || "nothing" }
+          end
+        else
+          para "No cases waiting on consent or evidence."
+        end
+      end
+
+      panel "Cases ready to submit" do
+        ready = ProgrammeCase.submission_queue
+
+        if ready.any?
+          table_for ready do
+            column("Case") { |c| link_to c.reference, admin_programme_case_path(c) }
+            column("Household") { |c| c.household.reference }
+            column("Programme") { |c| c.programme_type.humanize }
+            column("Opened") { |c| c.opened_on }
+          end
+        else
+          para "Nothing ready to go to the programme office."
+        end
+      end
+    end
+
     panel "Registry at a glance" do
       table_for Household.statuses.keys do
         column("Status") { |s| status_tag s.humanize }
