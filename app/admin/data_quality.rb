@@ -32,6 +32,56 @@ ActiveAdmin.register_page "Data quality" do
       end
     end
 
+    if authorized?(:read, Contribution)
+      panel "Payment reconciliation" do
+        para "The registry reconciles payments; it never holds funds. These figures "\
+             "describe money that moved through a licensed rail or an authorised collector."
+        table_for report.payment_rows do
+          column("Measure") { |row| row.first }
+          column("Value")   { |row| row.last }
+        end
+      end
+
+      panel "Campaign ledgers" do
+        ledgers = report.campaign_ledgers
+
+        if ledgers.any?
+          table_for ledgers do
+            column("Campaign") { |l| link_to l[:campaign].reference, admin_mobilisation_campaign_path(l[:campaign]) }
+            column("Name") { |l| l[:campaign].name }
+            column("Target") { |l| l[:target] }
+            column("Received") { |l| l[:received] }
+            column("Pending") { |l| l[:pending] }
+            column("Exceptions") { |l| l[:exceptions] }
+            column("Outstanding") { |l| l[:outstanding] }
+            column("Progress") { |l| l[:progress] ? "#{l[:progress]}%" : "—" }
+            column("Households yet to give") { |l| l[:households_outstanding] }
+          end
+        else
+          para "No campaigns yet."
+        end
+      end
+
+      panel "Finance exceptions" do
+        exceptions = report.payment_exceptions
+
+        if exceptions.any?
+          para "Payments that will not match. These are a queue to work, not a "\
+               "failure to hide."
+          table_for exceptions do
+            column("Contribution") { |k| link_to k.reference, admin_contribution_path(k) }
+            column("Campaign") { |k| k.mobilisation_campaign.reference }
+            column("Household") { |k| k.household.reference }
+            column("Expected") { |k| k.describes }
+            column("Receipted") { |k| k.receipted_amount }
+            column("Note") { |k| k.exception_note }
+          end
+        else
+          para "No payment exceptions outstanding."
+        end
+      end
+    end
+
     panel "Resident self-service" do
       rate = report.update_rate
       para "The pilot has to report how many residents can update without "\

@@ -15,10 +15,17 @@ class Ability
     # Everyone signed in can see the registry and read the audit trail. The audit
     # trail is readable by design: it is what makes the registry accountable.
     can :read, [ Household, Person, ConsentRecord ]
-    # Programme casework is readable by default and REVOKED for the registrar
-    # below. CanCanCan lets the last matching rule win, so granting here and
-    # taking it away in registrar_rules is the order that works.
+    # Programme casework and mobilisation money are readable by default and
+    # REVOKED per role below. CanCanCan lets the last matching rule win, so
+    # granting here and taking it away in a role's rules is the order that works.
+    #
+    # The two revocations are deliberately symmetrical, and together they are the
+    # political firewall: a REGISTRAR cannot see who sought welfare support, and a
+    # PROGRAMME MANAGER cannot see who contributed money. Neither can form the
+    # link "this family gave / did not give, so treat their support claim
+    # accordingly". Keeping those two views apart is the control.
     can :read, [ ProgrammeCase, CaseDocument ]
+    can :read, [ MobilisationCampaign, Contribution, Receipt ]
 
     can :read, PaperTrail::Version
     # ActiveAdmin authorises its own pages (the Dashboard is one), so without this
@@ -61,6 +68,14 @@ class Ability
     can :withdraw, ConsentRecord
 
     cannot :read, [ ProgrammeCase, CaseDocument ]
+
+    # Collects pledges and captures receipts in the field, but confirms nothing:
+    # whoever takes the money must not be the one who says it arrived.
+    can [ :create, :update ], Contribution
+    can [ :create, :update ], Receipt
+    cannot :verify_receipt, Receipt
+    cannot :reconcile, Contribution
+    cannot [ :create, :update ], MobilisationCampaign
   end
 
   # Verifies households and manages accounts. Cannot deactivate registry records:
@@ -84,10 +99,23 @@ class Ability
     can :record_outcome, ProgrammeCase
     can [ :create, :update ], CaseDocument
     can :verify_evidence, CaseDocument
+
+    # Runs mobilisation: approves where money is to go, opens and closes
+    # campaigns, verifies receipts and reconciles contributions.
+    can [ :create, :update ], MobilisationCampaign
+    can [ :approve_account, :open_campaign, :close_campaign ], MobilisationCampaign
+    can [ :create, :update ], Contribution
+    can :reconcile, Contribution
+    can [ :create, :update ], Receipt
+    can :verify_receipt, Receipt
   end
 
   # Owns programme casework. Read-only on the registry itself: a programme
   # manager needs to see households to run cases, not to edit them.
+  #
+  # Cannot see contributions at all — the other half of the political firewall.
+  # Whether a family gave to the roofing fund must not be visible to the person
+  # deciding whether their BEAM case goes forward.
   def programme_manager_rules
     cannot [ :create, :update ], [ Household, Person, ConsentRecord ]
     cannot :verify, Household
@@ -97,6 +125,8 @@ class Ability
     can :record_outcome, ProgrammeCase
     can [ :create, :update ], CaseDocument
     can :verify_evidence, CaseDocument
+
+    cannot :read, [ MobilisationCampaign, Contribution, Receipt ]
   end
 
   # System administration. The only role that may soft-delete, and the only one
@@ -114,5 +144,12 @@ class Ability
     can [ :create, :update ], ProgrammeCase
     can [ :create, :update ], CaseDocument
     cannot [ :submit, :record_outcome ], ProgrammeCase
+
+    # Same principle on the money side: can administer the records, cannot
+    # confirm that money arrived or sign off where it goes.
+    can [ :create, :update ], [ MobilisationCampaign, Contribution, Receipt ]
+    cannot [ :approve_account, :open_campaign ], MobilisationCampaign
+    cannot :verify_receipt, Receipt
+    cannot :reconcile, Contribution
   end
 end

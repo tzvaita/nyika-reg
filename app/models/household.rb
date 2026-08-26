@@ -21,9 +21,11 @@ class Household < ApplicationRecord
   has_many :people, dependent: :restrict_with_error
   has_many :consent_records, through: :people
 
-  # The household is the administrative anchor: programme cases, and later
-  # contributions and receipts, attach to it.
+  # The household is the administrative anchor: programme cases and contributions
+  # both attach to it. They do NOT attach to each other — see the political
+  # firewall note on the contributions migration.
   has_many :programme_cases, dependent: :restrict_with_error
+  has_many :contributions, dependent: :restrict_with_error
 
   # allow_destroy is deliberately FALSE: a member who leaves is deactivated, so the
   # audit trail keeps someone to point at. The form marks them inactive instead.

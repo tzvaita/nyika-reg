@@ -201,3 +201,70 @@ if ProgrammeCase.none?
 
   puts "Seeded #{ProgrammeCase.count} programme cases, #{CaseDocument.count} evidence records."
 end
+
+# ---------------------------------------------------------------------------
+# A demo mobilisation campaign with a ledger that includes the awkward cases:
+# a clean payment, a part-payment exception, and donated labour. A demo where
+# everything reconciles teaches nobody anything.
+# ---------------------------------------------------------------------------
+if MobilisationCampaign.none? && admin
+  campaign = MobilisationCampaign.create!(
+    name: "Community Centre Roofing Fund",
+    purpose: "Roof sheets, timber and labour for the community centre",
+    campaign_type: :building_fund, obligation: :voluntary,
+    target_amount: 5000, currency: "USD", suggested_contribution: 10,
+    opens_on: Date.current - 30, closes_on: Date.current + 60,
+    reporting_owner: admin, change_reason: "Agreed at the village meeting",
+    audit_source_channel: "seed"
+  )
+  campaign.approve_receiving_account!(
+    by: admin,
+    name: "Nyika Village Development Account",
+    detail: "Bank 0123456789 — village development committee",
+    reason: "Approved by the village development committee"
+  )
+  campaign.open!(by: admin, reason: "Opened after the account was approved")
+
+  households = Household.live.order(:reference).to_a
+
+  # 1. A contribution that reconciles cleanly.
+  if households[0]
+    clean = Contribution.create!(mobilisation_campaign: campaign, household: households[0],
+                                 contribution_kind: :money, amount: 25, payment_method: :ecocash,
+                                 recorded_by: registrar, change_reason: "Demo data",
+                                 audit_source_channel: "seed")
+    clean.mark_payment_claimed!(reference: "EC-4471902")
+    receipt = clean.receipts.create!(payment_rail: :ecocash, external_reference: "EC-4471902",
+                                     amount: 25, captured_by: registrar,
+                                     change_reason: "Demo data", audit_source_channel: "seed")
+    receipt.verify!(by: admin, reason: "Matched against the account statement")
+    clean.reconcile!
+  end
+
+  # 2. A part payment: pledged 50, paid 20. This is the exception queue doing
+  #    its job, and the finance report has something real to show.
+  if households[1]
+    short = Contribution.create!(mobilisation_campaign: campaign, household: households[1],
+                                 contribution_kind: :money, amount: 50, payment_method: :cash_collector,
+                                 recorded_by: registrar, change_reason: "Demo data",
+                                 audit_source_channel: "seed")
+    part = short.receipts.create!(payment_rail: :cash_collector, external_reference: "CASH-014",
+                                  amount: 20, captured_by: registrar,
+                                  proof_link: "https://storage.example/slips/cash-014.jpg",
+                                  change_reason: "Demo data", audit_source_channel: "seed")
+    part.verify!(by: admin, reason: "Slip sighted at the village office")
+    short.flag_exception!(note: "Paid 20 of 50 pledged; household asked to pay the balance after harvest")
+  end
+
+  # 3. Labour, counted and never priced.
+  if households[2]
+    Contribution.create!(mobilisation_campaign: campaign, household: households[2],
+                         contribution_kind: :labour,
+                         item_description: "Two days roofing labour, two people",
+                         recorded_by: registrar, change_reason: "Demo data",
+                         audit_source_channel: "seed")
+  end
+
+  puts "Seeded #{MobilisationCampaign.count} campaign, #{Contribution.count} contributions, " \
+       "#{Receipt.count} receipts."
+end

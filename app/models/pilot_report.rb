@@ -94,6 +94,45 @@ class PilotReport
     end
   end
 
+  # Deck p11: "Payment recon — paid, pending, cash, exceptions and receipts".
+  # The registry reconciles; it never holds funds, so these figures describe
+  # money that moved through a licensed rail or an authorised collector.
+  def payment_rows
+    [
+      [ "Campaigns open", MobilisationCampaign.live.count ],
+      [ "Contributions recorded", Contribution.count ],
+      [ "Reconciled", Contribution.where(status: :reconciled).count ],
+      [ "Still outstanding", Contribution.outstanding.count ],
+      [ "Exceptions to work", Contribution.needs_attention.count ],
+      [ "Receipts captured", Receipt.count ],
+      [ "Receipts verified", Receipt.verified.count ],
+      [ "Cash receipts", Receipt.where(payment_rail: :cash_collector).count ],
+      [ "Cash awaiting verification",
+        Receipt.where(payment_rail: :cash_collector, verification_status: :recorded).count ]
+    ]
+  end
+
+  # Every campaign's ledger in one place: the brief's campaign ledger deliverable.
+  def campaign_ledgers
+    MobilisationCampaign.order(:reference).map do |campaign|
+      {
+        campaign: campaign,
+        target: campaign.target_amount,
+        received: campaign.received_amount,
+        pending: campaign.pending_amount,
+        exceptions: campaign.exception_amount,
+        outstanding: campaign.outstanding_amount,
+        progress: campaign.progress_percentage,
+        households_outstanding: campaign.households_outstanding.count
+      }
+    end
+  end
+
+  # The finance exception report the brief asks for.
+  def payment_exceptions
+    Contribution.needs_attention.includes(:household, :mobilisation_campaign)
+  end
+
   def summary_rows
     [
       [ "Households registered", Household.live.count ],

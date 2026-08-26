@@ -65,6 +65,40 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
+    # Hidden from a programme manager: the other half of the political firewall.
+    if authorized?(:read, Contribution)
+      panel "Open campaigns" do
+        campaigns = MobilisationCampaign.live.order(:opens_on)
+
+        if campaigns.any?
+          table_for campaigns do
+            column("Campaign") { |c| link_to c.reference, admin_mobilisation_campaign_path(c) }
+            column(:name)
+            column("Target") { |c| c.target_amount ? "#{c.currency} #{c.target_amount}" : c.target_description }
+            column("Received") { |c| "#{c.currency} #{c.received_amount}" }
+            column("Progress") { |c| c.progress_percentage ? "#{c.progress_percentage}%" : "—" }
+            column("Closes") { |c| c.closes_on }
+          end
+        else
+          para "No campaigns are open."
+        end
+      end
+
+      panel "Payments needing attention" do
+        exceptions = Contribution.needs_attention
+        unverified_cash = Receipt.where(payment_rail: :cash_collector, verification_status: :recorded)
+
+        table_for [
+          { issue: "Contributions in exception", count: exceptions.count },
+          { issue: "Cash receipts awaiting verification", count: unverified_cash.count },
+          { issue: "Contributions pledged but not reconciled", count: Contribution.outstanding.count }
+        ] do
+          column("Issue") { |r| r[:issue] }
+          column("Count") { |r| r[:count].zero? ? status_tag("0", class: :ok) : status_tag(r[:count].to_s, class: :error) }
+        end
+      end
+    end
+
     panel "Registry at a glance" do
       table_for Household.statuses.keys do
         column("Status") { |s| status_tag s.humanize }

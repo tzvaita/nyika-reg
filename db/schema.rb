@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_144441) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_175550) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,6 +63,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_144441) do
     t.index ["recorded_by_id"], name: "index_consent_records_on_recorded_by_id"
   end
 
+  create_table "contributions", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2
+    t.integer "contribution_kind", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.text "exception_note"
+    t.bigint "household_id", null: false
+    t.string "item_description"
+    t.bigint "mobilisation_campaign_id", null: false
+    t.integer "payment_method"
+    t.string "payment_reference"
+    t.date "pledged_on", null: false
+    t.bigint "recorded_by_id"
+    t.string "reference", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["household_id"], name: "index_contributions_on_household_id"
+    t.index ["mobilisation_campaign_id", "household_id"], name: "idx_on_mobilisation_campaign_id_household_id_7329a86ba0"
+    t.index ["mobilisation_campaign_id"], name: "index_contributions_on_mobilisation_campaign_id"
+    t.index ["payment_reference"], name: "index_contributions_on_payment_reference"
+    t.index ["recorded_by_id"], name: "index_contributions_on_recorded_by_id"
+    t.index ["reference"], name: "index_contributions_on_reference", unique: true
+    t.index ["status"], name: "index_contributions_on_status"
+  end
+
   create_table "households", force: :cascade do |t|
     t.integer "capture_source", default: 0, null: false
     t.bigint "captured_by_id"
@@ -83,6 +107,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_144441) do
     t.index ["status"], name: "index_households_on_status"
     t.index ["token"], name: "index_households_on_token", unique: true
     t.index ["verified_by_id"], name: "index_households_on_verified_by_id"
+  end
+
+  create_table "mobilisation_campaigns", force: :cascade do |t|
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.integer "campaign_type", default: 0, null: false
+    t.date "closes_on"
+    t.datetime "created_at", null: false
+    t.string "currency", default: "USD", null: false
+    t.string "name", null: false
+    t.integer "obligation", default: 0, null: false
+    t.date "opens_on", null: false
+    t.text "purpose"
+    t.string "receiving_account_detail"
+    t.string "receiving_account_name"
+    t.string "reference", null: false
+    t.bigint "reporting_owner_id"
+    t.integer "status", default: 0, null: false
+    t.decimal "suggested_contribution", precision: 12, scale: 2
+    t.decimal "target_amount", precision: 12, scale: 2
+    t.string "target_description"
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_id"], name: "index_mobilisation_campaigns_on_approved_by_id"
+    t.index ["reference"], name: "index_mobilisation_campaigns_on_reference", unique: true
+    t.index ["reporting_owner_id"], name: "index_mobilisation_campaigns_on_reporting_owner_id"
+    t.index ["status"], name: "index_mobilisation_campaigns_on_status"
   end
 
   create_table "people", force: :cascade do |t|
@@ -124,6 +174,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_144441) do
     t.index ["submitted_by_id"], name: "index_programme_cases_on_submitted_by_id"
   end
 
+  create_table "receipts", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2
+    t.bigint "captured_by_id"
+    t.bigint "contribution_id", null: false
+    t.datetime "created_at", null: false
+    t.string "external_reference"
+    t.date "issued_on", null: false
+    t.text "note"
+    t.integer "payment_rail", default: 0, null: false
+    t.string "proof_link"
+    t.string "reference", null: false
+    t.datetime "updated_at", null: false
+    t.integer "verification_status", default: 0, null: false
+    t.datetime "verified_at"
+    t.bigint "verified_by_id"
+    t.index ["captured_by_id"], name: "index_receipts_on_captured_by_id"
+    t.index ["contribution_id"], name: "index_receipts_on_contribution_id"
+    t.index ["external_reference"], name: "index_receipts_on_external_reference"
+    t.index ["reference"], name: "index_receipts_on_reference", unique: true
+    t.index ["verification_status"], name: "index_receipts_on_verification_status"
+    t.index ["verified_by_id"], name: "index_receipts_on_verified_by_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -158,11 +231,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_144441) do
   add_foreign_key "case_documents", "users", column: "verified_by_id"
   add_foreign_key "consent_records", "people"
   add_foreign_key "consent_records", "users", column: "recorded_by_id"
+  add_foreign_key "contributions", "households"
+  add_foreign_key "contributions", "mobilisation_campaigns"
+  add_foreign_key "contributions", "users", column: "recorded_by_id"
   add_foreign_key "households", "users", column: "captured_by_id"
   add_foreign_key "households", "users", column: "verified_by_id"
+  add_foreign_key "mobilisation_campaigns", "users", column: "approved_by_id"
+  add_foreign_key "mobilisation_campaigns", "users", column: "reporting_owner_id"
   add_foreign_key "people", "households"
   add_foreign_key "programme_cases", "households"
   add_foreign_key "programme_cases", "people", column: "beneficiary_id"
   add_foreign_key "programme_cases", "users", column: "opened_by_id"
   add_foreign_key "programme_cases", "users", column: "submitted_by_id"
+  add_foreign_key "receipts", "contributions"
+  add_foreign_key "receipts", "users", column: "captured_by_id"
+  add_foreign_key "receipts", "users", column: "verified_by_id"
 end

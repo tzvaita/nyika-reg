@@ -142,6 +142,49 @@ sought welfare support, which is exactly the kind of thing that must not circula
 around a village. Administrators and programme managers run casework; a tech admin
 can administer cases but deliberately cannot submit one or decide an outcome.
 
+## Mobilisation and payments
+
+Campaigns raise money, materials or labour. **The platform never holds funds** —
+money moves on a licensed rail (EcoCash, InnBucks, bank) or to an authorised cash
+collector, and the registry records where it was meant to go and matches it
+afterwards. The registry orchestrates and reconciles; it is not a bank.
+
+Four rules do the work:
+
+1. **A campaign cannot open without an approved receiving account or collector.**
+   This is the mitigation for the brief's "payment confusion" risk — residents
+   paying the wrong account.
+2. **A contribution is only reconciled against a VERIFIED receipt**, and whoever
+   captured a receipt cannot verify it. Whoever takes the money is never the
+   person who confirms it arrived.
+3. **A receipt that does not match the pledge is refused**, not quietly accepted.
+   It goes to the exception queue with a note, which is what fills the finance
+   exception report.
+4. **Cash receipts must carry proof** — a link to banking proof or a photographed
+   slip. Cash is where money goes missing.
+
+Materials and labour are **counted, never priced**. Putting a cash value on
+someone's donated labour is a judgement the registry has no business making.
+
+Residents are told whether a campaign is `voluntary` or an `approved_obligation`.
+Being asked and being required are different things.
+
+### The political firewall
+
+Both documents forbid mixing contribution flows with welfare, vulnerability or
+government programme data. That is enforced structurally, not by good intentions:
+
+- **There is no association between `Contribution` and `ProgrammeCase`**, in
+  either direction, and no foreign key joining them. A governance test fails if
+  one is added.
+- **A registrar cannot see casework. A programme manager cannot see money.**
+  Neither can form the link "this family gave, or did not give, so treat their
+  support claim accordingly". Only an administrator sees both, and they are the
+  accountable owner.
+- **Political fundraising is not an available campaign type.** It is excluded
+  until legal and governance approvals are explicit, so the option is absent
+  rather than present-and-discouraged.
+
 ## Reports
 
 ```bash

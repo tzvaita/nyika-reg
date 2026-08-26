@@ -19,7 +19,8 @@ class GovernanceTest < ActiveSupport::TestCase
   # restricted access — but this build captures none of it, and this test is what
   # stops that changing by accident rather than by decision.
   REGISTRY_MODELS = [ Household, Person, ConsentRecord, User,
-                      ProgrammeCase, CaseDocument ].freeze
+                      ProgrammeCase, CaseDocument,
+                      MobilisationCampaign, Contribution, Receipt ].freeze
 
   test "no minimised field exists anywhere in the registry schema" do
     REGISTRY_MODELS.each do |model|
@@ -71,8 +72,57 @@ class GovernanceTest < ActiveSupport::TestCase
     assert document.reload.verified?
   end
 
+  test "the political firewall: contributions are not linked to programme cases" do
+    # Both documents forbid mixing contribution flows with welfare, vulnerability
+    # or government programme data. Keeping the tables unlinked is what makes that
+    # structural rather than a matter of good behaviour — so no association
+    # between the two may exist in either direction.
+    contribution_links = Contribution.reflect_on_all_associations.map(&:name)
+    case_links = ProgrammeCase.reflect_on_all_associations.map(&:name)
+
+    assert_not_includes contribution_links, :programme_case
+    assert_not_includes contribution_links, :programme_cases
+    assert_not_includes case_links, :contribution
+    assert_not_includes case_links, :contributions
+
+    # And no foreign key columns joining them either.
+    assert_not_includes Contribution.column_names, "programme_case_id"
+    assert_not_includes ProgrammeCase.column_names, "contribution_id"
+  end
+
+  test "no role can see both casework and contributions except the administrator" do
+    # The two views are kept apart so nobody can form the link "this family gave,
+    # or did not give, so treat their support claim accordingly".
+    registrar = Ability.new(users(:registrar))
+    programme = Ability.new(users(:programme_manager))
+
+    assert registrar.can?(:read, Contribution)
+    assert_not registrar.can?(:read, ProgrammeCase)
+
+    assert programme.can?(:read, ProgrammeCase)
+    assert_not programme.can?(:read, Contribution)
+  end
+
+  test "political fundraising is not an available campaign type" do
+    # Excluded from the POC until legal and governance approvals are explicit,
+    # so the option is absent rather than present-and-discouraged.
+    assert_not MobilisationCampaign.campaign_types.keys.any? { |t| t.match?(/politic|party|candidate|election/) }
+  end
+
+  test "the registry records payments but never holds funds" do
+    # A balance or wallet column would mean the platform had become a bank, which
+    # both documents rule out.
+    banking = /\A(balance|wallet|float|account_balance|held_funds)\z/
+    [ MobilisationCampaign, Contribution, Receipt, Household ].each do |model|
+      model.column_names.each do |column|
+        assert_no_match banking, column, "#{model.name}.#{column} suggests holding funds"
+      end
+    end
+  end
+
   test "every registry record is auditable" do
-    [ Household, Person, ConsentRecord, ProgrammeCase, CaseDocument ].each do |model|
+    [ Household, Person, ConsentRecord, ProgrammeCase, CaseDocument,
+      MobilisationCampaign, Contribution, Receipt ].each do |model|
       assert model.reflect_on_association(:versions).present?,
              "#{model.name} must record versions"
       assert model.new.respond_to?(:change_reason), "#{model.name} must accept a change reason"
