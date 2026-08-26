@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_201132) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_104702) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,6 +28,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_201132) do
     t.index ["resource_type", "resource_id"], name: "index_active_admin_comments_on_resource"
   end
 
+  create_table "consent_records", force: :cascade do |t|
+    t.integer "channel", default: 0, null: false
+    t.string "consent_version", null: false
+    t.datetime "created_at", null: false
+    t.date "granted_on", null: false
+    t.bigint "person_id", null: false
+    t.integer "purpose", null: false
+    t.bigint "recorded_by_id"
+    t.datetime "updated_at", null: false
+    t.text "withdrawal_note"
+    t.datetime "withdrawn_at"
+    t.index ["person_id", "purpose"], name: "index_consent_records_on_person_id_and_purpose"
+    t.index ["person_id"], name: "index_consent_records_on_person_id"
+    t.index ["recorded_by_id"], name: "index_consent_records_on_recorded_by_id"
+  end
+
+  create_table "households", force: :cascade do |t|
+    t.integer "capture_source", default: 0, null: false
+    t.bigint "captured_by_id"
+    t.datetime "created_at", null: false
+    t.date "last_confirmed_on"
+    t.text "location_description"
+    t.string "name", null: false
+    t.string "principal_contact"
+    t.string "reference", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at"
+    t.bigint "verified_by_id"
+    t.index ["captured_by_id"], name: "index_households_on_captured_by_id"
+    t.index ["name", "location_description"], name: "index_households_on_name_and_location"
+    t.index ["reference"], name: "index_households_on_reference", unique: true
+    t.index ["status"], name: "index_households_on_status"
+    t.index ["verified_by_id"], name: "index_households_on_verified_by_id"
+  end
+
+  create_table "people", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.integer "age_band"
+    t.string "contact_method"
+    t.datetime "created_at", null: false
+    t.bigint "household_id", null: false
+    t.string "name", null: false
+    t.integer "relationship", default: 0, null: false
+    t.integer "residency_status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "year_of_birth"
+    t.index ["household_id", "active"], name: "index_people_on_household_id_and_active"
+    t.index ["household_id"], name: "index_people_on_household_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -43,4 +94,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_201132) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["role"], name: "index_users_on_role"
   end
+
+  create_table "versions", force: :cascade do |t|
+    t.datetime "created_at"
+    t.string "event", null: false
+    t.bigint "item_id", null: false
+    t.string "item_type", null: false
+    t.text "object"
+    t.text "object_changes"
+    t.text "reason"
+    t.string "whodunnit"
+    t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+  end
+
+  add_foreign_key "consent_records", "people"
+  add_foreign_key "consent_records", "users", column: "recorded_by_id"
+  add_foreign_key "households", "users", column: "captured_by_id"
+  add_foreign_key "households", "users", column: "verified_by_id"
+  add_foreign_key "people", "households"
 end
