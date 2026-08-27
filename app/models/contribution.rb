@@ -15,7 +15,13 @@ class Contribution < ApplicationRecord
     innbucks: 1,
     bank: 2,
     cash_collector: 3,
-    pay_later: 4
+    pay_later: 4,
+    # Diaspora routes. APPENDED, never reordered: these are persisted integers.
+    # They are remittance services, captured as a route and a reference rather
+    # than an integration — no payment API is wired up before provider approval.
+    mukuru: 5,
+    worldremit: 6,
+    international_bank: 7
   }, validate: { allow_nil: true }
 
   enum :status, {
@@ -25,8 +31,21 @@ class Contribution < ApplicationRecord
     exception: 3    # will not match, and needs a human
   }, validate: true
 
+  # Where the giving came from. A diaspora contribution is the same kind of fact
+  # as a local one, following a different route, so it is a flag rather than a
+  # separate model.
+  enum :origin, { local: 0, diaspora: 1 }, validate: true, prefix: true
+
+  # Which routes each public page offers. Kept here rather than in the
+  # controller so a route can never be offered that the model will refuse.
+  LOCAL_METHODS = %w[ecocash innbucks bank cash_collector].freeze
+  DIASPORA_METHODS = %w[mukuru worldremit international_bank].freeze
+
   belongs_to :mobilisation_campaign
-  belongs_to :household
+  # Optional since the public payments page: someone in the diaspora creating a
+  # reference is not necessarily a Nyika household. Where the number matches one,
+  # it is attached so the household's own receipts page shows the payment.
+  belongs_to :household, optional: true
   belongs_to :recorded_by, class_name: "User", optional: true
 
   has_many :receipts, dependent: :restrict_with_error
@@ -36,6 +55,9 @@ class Contribution < ApplicationRecord
 
   validates :reference, presence: true, uniqueness: true
   validates :pledged_on, presence: true
+  # Somebody has to be identifiable, or a payment that arrives cannot be matched
+  # to anyone: either a registered household, or a name given on the form.
+  validate  :attributable_to_someone
   validates :amount, numericality: { greater_than: 0 }, allow_nil: true
   validate  :money_has_an_amount
   validate  :in_kind_has_a_description
@@ -45,6 +67,8 @@ class Contribution < ApplicationRecord
   before_validation :set_pledged_on, on: :create
 
   scope :outstanding, -> { where(status: [ :pledged, :pending ]) }
+  scope :from_diaspora, -> { where(origin: :diaspora) }
+  scope :unattached, -> { where(household_id: nil) }
   scope :needs_attention, -> { where(status: :exception) }
 
   def verified_receipts
@@ -85,6 +109,22 @@ class Contribution < ApplicationRecord
             payment_method: method || payment_method)
   end
 
+  # Ties a public payment to a household where the number is one we know. This is
+  # the same matching the WhatsApp router uses, so a number written any way finds
+  # the same household.
+  def attach_household_from_contact
+    self.contributor_number = PhoneNumber.normalise(contributor_contact)
+    return if contributor_number.blank? || household.present?
+
+    self.household = Household.find_by_contact_number(contributor_number)
+  end
+
+  def giver_name
+    return contributor_name if contributor_name.present?
+
+    household&.name || "Not given"
+  end
+
   def describes
     return item_description.presence || contribution_kind.humanize unless money?
 
@@ -105,6 +145,12 @@ class Contribution < ApplicationRecord
   end
 
   private
+
+  def attributable_to_someone
+    return if household_id.present? || contributor_name.present?
+
+    errors.add(:contributor_name, "is needed so a payment can be matched to someone")
+  end
 
   def assign_reference
     return if reference.present?

@@ -1,0 +1,40 @@
+<% content_for :title, "Diaspora Contributions — Nyika Village" %>
+
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Diaspora Contributions</p>
+  <h1 class="mt-2 text-3xl text-village sm:text-4xl">Support Nyika from anywhere.</h1>
+  <p class="mt-3 max-w-3xl text-muted">
+    Create a Nyika reference first, then remit and submit the external
+    transaction reference for reconciliation.
+  </p>
+
+  <section class="mt-8 rounded-2xl border border-rule bg-white p-5 sm:p-6">
+    <h2 class="font-display text-xl text-village">Create diaspora reference</h2>
+
+    <%= render "public/reference_form",
+               contribution: @contribution, campaigns: @open_campaigns, routes: @routes %>
+  </section>
+
+  <% if @open_campaigns.any? %>
+    <section class="mt-10">
+      <h2 class="font-display text-xl text-village">Open collections</h2>
+      <div class="mt-4 grid gap-4 lg:grid-cols-2">
+        <% @open_campaigns.each do |campaign| %>
+          <%= render "public/campaign_card", campaign: campaign %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <%= render "shared/ui/promise", heading: "How remittances are handled" do %>
+    <p>
+      Mukuru, WorldRemit and international bank transfers are recorded as a route
+      and a reference. Nothing is integrated with a payment provider — the
+      registry reconciles payments, it does not take them.
+    </p>
+    <p class="mt-2">
+      A payment that cannot be matched is held as an exception and followed up,
+      rather than quietly absorbed.
+    </p>
+  <% end %>
+</main>

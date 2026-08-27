@@ -1,0 +1,75 @@
+<% content_for :title, "Your payment reference — Nyika Village" %>
+
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+    <%= @contribution.origin_diaspora? ? "Complete your remittance" : "Your payment journey" %>
+  </p>
+  <h1 class="mt-2 text-3xl text-village sm:text-4xl">Reference created</h1>
+
+  <div class="mt-6 rounded-2xl border border-rule bg-white p-5 sm:p-6">
+    <p class="text-sm text-muted">Quote this when you pay:</p>
+    <p class="mt-2 font-mono text-2xl font-bold tracking-wide text-village">
+      <%= @contribution.reference %>
+    </p>
+
+    <dl class="mt-5 grid gap-3 border-t border-rule pt-5 text-sm sm:grid-cols-2">
+      <div>
+        <dt class="text-muted">Fund</dt>
+        <dd class="font-semibold text-ink"><%= @contribution.mobilisation_campaign.name %></dd>
+      </div>
+      <div>
+        <dt class="text-muted">Amount</dt>
+        <dd class="font-semibold text-ink">
+          <%= @contribution.mobilisation_campaign.currency %> <%= @contribution.amount %>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-muted">Route</dt>
+        <dd class="font-semibold text-ink"><%= @contribution.payment_method&.humanize %></dd>
+      </div>
+      <div>
+        <dt class="text-muted">Status</dt>
+        <dd class="font-semibold text-ink"><%= @contribution.status.humanize %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <%# The approved account, given to the person about to pay. This is the point
+      at which the brief's payment-confusion risk is actually addressed. %>
+  <div class="mt-4 rounded-2xl border border-rule bg-white p-5 sm:p-6"
+       data-controller="clipboard">
+    <p class="text-xs font-semibold uppercase tracking-wide text-muted">Pay only to</p>
+    <p class="mt-1 font-semibold text-ink"><%= @contribution.mobilisation_campaign.receiving_account_name %></p>
+    <div class="mt-1 flex items-start justify-between gap-3">
+      <p class="text-sm text-ink" data-clipboard-target="source">
+        <%= @contribution.mobilisation_campaign.receiving_account_detail %>
+      </p>
+      <button type="button" data-action="clipboard#copy" data-clipboard-target="button"
+              class="shrink-0 rounded-lg border border-rule px-3 py-1.5 text-xs font-semibold">
+        Copy
+      </button>
+    </div>
+    <p class="mt-3 text-xs text-muted">
+      If anyone asks you to pay somewhere else, check with the village office first.
+    </p>
+  </div>
+
+  <%= render "shared/ui/promise", heading: "What happens next" do %>
+    <p>
+      Send your payment quoting the reference above, then keep whatever receipt
+      or transaction number you are given. The village office matches it and
+      confirms the payment.
+    </p>
+    <p class="mt-2">
+      Only reconciled money appears in public totals — nothing is counted until
+      somebody has checked it against the account.
+    </p>
+  <% end %>
+
+  <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+    <%= link_to "Back to payments", payments_path,
+                class: "rounded-lg bg-village px-5 py-3 text-center text-sm font-semibold text-white" %>
+    <%= link_to "Where the money goes", payments_path(anchor: "collections"),
+                class: "rounded-lg border border-rule px-5 py-3 text-center text-sm font-semibold text-ink" %>
+  </div>
+</main>

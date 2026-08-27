@@ -28,7 +28,7 @@
         <% end %>
       </p>
       <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
-        <div class="h-2 rounded-full bg-nyika-ink" style="width: <%= [campaign.progress_percentage.to_f, 100].min %>%"></div>
+        <div class="h-2 rounded-full bg-village" style="width: <%= [campaign.progress_percentage.to_f, 100].min %>%"></div>
       </div>
     <% elsif campaign.target_description.present? %>
       <p class="mt-3 text-sm text-slate-700">Needed: <strong><%= campaign.target_description %></strong></p>
@@ -86,7 +86,7 @@
       </div>
 
       <%= submit_tag "Record what I will give",
-                     class: "w-full rounded-xl bg-nyika-ink px-4 py-4 text-base font-semibold text-white" %>
+                     class: "w-full rounded-xl bg-village px-4 py-4 text-base font-semibold text-white" %>
     <% end %>
   </div>
 <% end %>

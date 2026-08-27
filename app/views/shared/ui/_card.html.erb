@@ -1,0 +1,7 @@
+<%# White card on the parchment background — their .card. %>
+<div class="rounded-2xl border border-rule bg-white p-5 <%= local_assigns[:class_name] %>">
+  <% if local_assigns[:title].present? %>
+    <h2 class="text-lg font-bold text-village"><%= title %></h2>
+  <% end %>
+  <%= yield %>
+</div>

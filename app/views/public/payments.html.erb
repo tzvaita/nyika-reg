@@ -1,0 +1,78 @@
+<% content_for :title, "Payments & Community Funds — Nyika Village" %>
+
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <h1 class="text-3xl text-village sm:text-4xl">Payments &amp; Community Funds</h1>
+  <p class="mt-2 text-muted">Only reconciled money appears in public totals.</p>
+
+  <%= render "shared/ui/notice" do %>
+    <b>Outside Zimbabwe?</b>
+    <%= link_to "Use diaspora contribution routes.", diaspora_path,
+                class: "font-semibold text-village underline underline-offset-2" %>
+  <% end %>
+
+  <section id="collections" class="mt-8">
+    <% if @open_campaigns.any? %>
+      <div class="grid gap-4 lg:grid-cols-2">
+        <% @open_campaigns.each do |campaign| %>
+          <%= render "public/campaign_card", campaign: campaign %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="rounded-2xl border border-rule bg-white p-5">
+        <p class="text-muted">No collections are open at the moment.</p>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="mt-8 rounded-2xl border border-rule bg-white p-5 sm:p-6">
+    <h2 class="font-display text-xl text-village">Create local payment reference</h2>
+    <p class="mt-2 text-sm text-muted">
+      Create the reference first, then pay quoting it. That is what lets the
+      village office match your payment to the right collection.
+    </p>
+
+    <%= render "public/reference_form",
+               contribution: @contribution, campaigns: @open_campaigns, routes: @routes %>
+  </section>
+
+  <% if @closed_campaigns.any? %>
+    <section class="mt-10">
+      <h2 class="font-display text-xl text-village">Finished</h2>
+      <div class="mt-4 overflow-x-auto rounded-2xl border border-rule bg-white">
+        <table class="w-full text-left text-sm">
+          <thead class="border-b border-rule text-xs uppercase tracking-wide text-muted">
+            <tr>
+              <th class="px-5 py-3">Collection</th>
+              <th class="px-5 py-3">Target</th>
+              <th class="px-5 py-3">Raised</th>
+              <th class="px-5 py-3">Closed</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule">
+            <% @closed_campaigns.each do |campaign| %>
+              <tr>
+                <td class="px-5 py-3 font-semibold text-ink"><%= campaign.name %></td>
+                <td class="px-5 py-3 text-muted">
+                  <%= campaign.target_amount ? "#{campaign.currency} #{number_with_delimiter(campaign.target_amount.to_i)}" : "—" %>
+                </td>
+                <td class="px-5 py-3 font-semibold text-village">
+                  <%= campaign.currency %> <%= number_with_delimiter(campaign.received_amount.to_i) %>
+                </td>
+                <td class="px-5 py-3 text-muted"><%= campaign.closes_on&.strftime("%b %Y") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+
+  <%= render "shared/ui/promise", heading: "What you will not find here" do %>
+    <p>
+      We publish what a collection raised. We never publish who gave, how much
+      they gave, or who has not given. What a household contributes is between
+      them and the village office, and a public list would turn a collection into
+      pressure.
+    </p>
+  <% end %>
+</main>

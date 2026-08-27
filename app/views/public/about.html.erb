@@ -1,0 +1,27 @@
+<% content_for :title, "About Nyika Village" %>
+
+<%# No hero on this page — the site only uses the green band on the home page
+    and Have Your Say. %>
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted">About Nyika Village</p>
+  <h1 class="mt-2 text-3xl text-village sm:text-4xl">Our place. Our people. Our story.</h1>
+  <p class="mt-4 max-w-3xl text-muted">
+    Nyika Village is a rural community in Goromonzi District, Zimbabwe. This
+    platform is a living record of who we are, how we live and what we are
+    building together.
+  </p>
+
+  <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <%= render "shared/ui/tile",
+               title: "Community & traditional life",
+               body: "Households, family relationships, customary leadership, meetings and shared responsibilities shape village life. The digital platform supports administration but does not replace customary authority." %>
+
+    <%= render "shared/ui/tile",
+               title: "Livelihoods",
+               body: "Farming, livestock, enterprise, employment, remittances and seasonal activity shape household life." %>
+
+    <%= render "shared/ui/tile",
+               title: "Culture & heritage",
+               body: "Oral histories, photographs, family stories, local practices and cultural knowledge can be contributed and verified before publication." %>
+  </div>
+</main>

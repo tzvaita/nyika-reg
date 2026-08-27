@@ -1,39 +1,41 @@
-<%# The menu button is the only piece of JS here; the links below work without it. %>
-<header class="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur"
-        data-controller="nav">
-  <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-    <%= link_to root_path, class: "flex items-center gap-2" do %>
-      <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-nyika-ink text-sm font-bold text-white">N</span>
-      <span class="font-bold text-nyika-ink">Nyika</span>
+<%# The menu button is the only JavaScript here; the links below work without it. %>
+<header class="border-b border-rule bg-white" data-controller="nav">
+  <div class="mx-auto flex h-[66px] w-[min(1080px,calc(100%-28px))] items-center gap-3">
+    <%= link_to root_path, class: "flex items-center gap-2.5" do %>
+      <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-village font-display text-sm font-bold text-white">NY</span>
+      <span class="font-display text-sm font-bold tracking-[0.12em] text-village">NYIKA VILLAGE</span>
     <% end %>
 
-    <nav class="hidden items-center gap-6 text-sm font-medium text-slate-700 sm:flex">
-      <%= link_to "What we do", services_path, class: "hover:text-nyika-ink" %>
-      <%= link_to "Where the money goes", campaigns_path, class: "hover:text-nyika-ink" %>
-      <%= link_to "Your details", trust_path, class: "hover:text-nyika-ink" %>
-      <%= link_to "Ask to be registered", new_registration_request_path,
-                  class: "rounded-lg bg-nyika-accent px-4 py-2 text-white" %>
+    <nav class="ml-auto hidden items-center gap-5 text-sm font-medium text-ink sm:flex">
+      <%= link_to "My Household", registry_path, class: "hover:text-village" %>
+      <%= link_to "Payments", payments_path, class: "hover:text-village" %>
+      <%= link_to "Diaspora", diaspora_path, class: "hover:text-village" %>
+      <%= link_to "Have your say", have_your_say_path, class: "hover:text-village" %>
+      <%= link_to "Register", new_registration_request_path,
+                  class: "rounded-lg bg-gold px-4 py-2 font-semibold text-village" %>
     </nav>
 
     <button type="button" data-action="nav#toggle" data-nav-target="button"
             aria-expanded="false" aria-controls="public-menu"
-            class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium sm:hidden">
+            class="ml-auto rounded-lg border border-rule px-3 py-2 text-sm font-medium sm:hidden">
       Menu
     </button>
   </div>
 
-  <%# Visible by default so the site works with JavaScript off; the controller
-      hides it on connect and toggles from there. %>
+  <%# Visible by default so the site navigates with JavaScript off; the
+      controller hides it on connect and toggles from there. %>
   <nav id="public-menu" data-nav-target="menu"
-       class="border-t border-slate-200 px-4 pb-4 pt-2 text-sm sm:hidden">
-    <div class="flex flex-col gap-1">
-      <%= link_to "What we do", services_path, class: "rounded-lg px-3 py-3 hover:bg-slate-100" %>
-      <%= link_to "Where the money goes", campaigns_path, class: "rounded-lg px-3 py-3 hover:bg-slate-100" %>
-      <%= link_to "How we protect your details", trust_path, class: "rounded-lg px-3 py-3 hover:bg-slate-100" %>
-      <%= link_to "Ask to be registered", new_registration_request_path,
-                  class: "rounded-lg bg-nyika-accent px-3 py-3 text-center font-medium text-white" %>
+       class="border-t border-rule px-4 pb-4 pt-2 text-sm sm:hidden">
+    <div class="mx-auto flex w-[min(1080px,calc(100%-28px))] flex-col gap-1">
+      <%= link_to "My Household", registry_path, class: "rounded-lg px-3 py-3 hover:bg-parchment" %>
+      <%= link_to "Payments", payments_path, class: "rounded-lg px-3 py-3 hover:bg-parchment" %>
+      <%= link_to "Diaspora", diaspora_path, class: "rounded-lg px-3 py-3 hover:bg-parchment" %>
+      <%= link_to "Have your say", have_your_say_path, class: "rounded-lg px-3 py-3 hover:bg-parchment" %>
+      <%= link_to "About", about_path, class: "rounded-lg px-3 py-3 hover:bg-parchment" %>
+      <%= link_to "Register my household", new_registration_request_path,
+                  class: "rounded-lg bg-gold px-3 py-3 text-center font-semibold text-village" %>
       <%= link_to "Village office sign in", new_user_session_path,
-                  class: "rounded-lg px-3 py-3 text-slate-500 hover:bg-slate-100" %>
+                  class: "rounded-lg px-3 py-3 text-muted hover:bg-parchment" %>
     </div>
   </nav>
 </header>

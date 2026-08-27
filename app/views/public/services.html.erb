@@ -1,6 +1,6 @@
 <% content_for :title, "What we do — Nyika Village Registry" %>
 
-<section class="bg-nyika-ink text-white">
+<section class="bg-village text-white">
   <div class="mx-auto max-w-5xl px-4 py-14">
     <h1 class="text-3xl font-bold sm:text-4xl">What the register is for</h1>
     <p class="mt-4 max-w-2xl text-lg text-white/85">
@@ -34,7 +34,7 @@
        ].each do |service| %>
       <article class="rounded-2xl bg-white p-6 shadow-sm">
         <div class="flex items-start justify-between gap-3">
-          <h2 class="font-bold text-nyika-ink"><%= service[:title] %></h2>
+          <h2 class="font-bold text-village"><%= service[:title] %></h2>
           <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium
                        <%= service[:live] ? "bg-emerald-100 text-emerald-900" : "bg-slate-100 text-slate-600" %>">
             <%= service[:live] ? "Available now" : "Planned" %>
@@ -51,7 +51,7 @@
   </p>
 
   <div class="mt-12 rounded-2xl bg-white p-8 shadow-sm">
-    <h2 class="text-xl font-bold text-nyika-ink">What the register does not do</h2>
+    <h2 class="text-xl font-bold text-village">What the register does not do</h2>
     <ul class="mt-4 space-y-2 text-slate-700">
       <li>It does not decide who gets government support. Government decides; we help you apply and record what they say.</li>
       <li>It does not hold your money. Payments go to an approved account or collector, and we record the receipt.</li>

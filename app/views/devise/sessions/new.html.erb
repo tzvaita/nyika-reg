@@ -3,7 +3,7 @@
 <div class="mx-auto mt-8 max-w-md">
   <div class="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
     <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Nyika Village Registry</p>
-    <h1 class="mt-1 text-2xl font-bold text-nyika-ink">Village office sign in</h1>
+    <h1 class="mt-1 text-2xl font-bold text-village">Village office sign in</h1>
     <p class="mt-2 text-sm text-slate-600">
       For registry staff. Residents do not need an account — open the link the
       village office sent you.
@@ -33,7 +33,7 @@
       <% end %>
 
       <%= f.submit "Sign in",
-                   class: "w-full rounded-xl bg-nyika-ink px-4 py-3.5 text-base font-semibold text-white" %>
+                   class: "w-full rounded-xl bg-village px-4 py-3.5 text-base font-semibold text-white" %>
     <% end %>
 
     <%= render "devise/shared/links" %>
@@ -41,6 +41,6 @@
 
   <p class="mt-4 text-center text-sm">
     <%= link_to "Back to the public site", root_path,
-                class: "text-slate-500 underline underline-offset-2 hover:text-nyika-ink" %>
+                class: "text-slate-500 underline underline-offset-2 hover:text-village" %>
   </p>
 </div>

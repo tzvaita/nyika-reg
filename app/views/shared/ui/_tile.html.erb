@@ -1,0 +1,18 @@
+<%# Their c() helper: an optional LIVE pill, a heading, muted text and a ghost
+    button. Used for the nine-card grid on the home page and elsewhere. %>
+<div class="flex flex-col rounded-2xl border border-rule bg-white p-5">
+  <% if local_assigns[:tag].present? %>
+    <span class="mb-2 self-start rounded-full bg-affirm px-2.5 py-1 text-[11px] font-bold tracking-wide text-village">
+      <%= tag %>
+    </span>
+  <% end %>
+
+  <h3 class="font-display text-lg text-village"><%= title %></h3>
+  <p class="mt-2 grow text-sm text-muted"><%= body %></p>
+
+  <% if local_assigns[:url].present? %>
+    <%= link_to label, url,
+                class: "mt-4 self-start rounded-lg border border-rule px-3.5 py-2.5 text-sm font-semibold text-village hover:bg-parchment",
+                **(local_assigns[:external] ? { target: "_blank", rel: "noopener" } : {}) %>
+  <% end %>
+</div>

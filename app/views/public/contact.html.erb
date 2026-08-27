@@ -1,0 +1,38 @@
+<% content_for :title, "Contact Nyika" %>
+
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <h1 class="text-3xl text-village sm:text-4xl">Contact Nyika</h1>
+
+  <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <%= render "shared/ui/tile",
+               title: "WhatsApp",
+               body: "Resident updates, assistance, payment instructions and Registry enquiries.",
+               url: registry_whatsapp_url, label: "Open WhatsApp", external: true %>
+
+    <%= render "shared/ui/tile",
+               title: "SMS",
+               body: "Residents without WhatsApp can use SMS.",
+               url: registry_sms_url, label: "Open SMS" %>
+
+    <%= render "shared/ui/tile",
+               title: "Call / assisted capture",
+               body: "Residents can call or have information captured by an authorised Registry officer.",
+               url: registry_tel_url, label: "Call Registry" %>
+  </div>
+
+  <%= render "shared/ui/promise", heading: "Registry number" do %>
+    <p><%= registry_number %></p>
+  <% end %>
+
+  <div class="mt-8 grid gap-3 sm:grid-cols-2">
+    <%= render "shared/ui/tile",
+               title: "Not registered yet?",
+               body: "Leave your name and how to reach you, and someone will come and see you. Nothing about your household is recorded until you have spoken to someone and agreed to it.",
+               url: new_registration_request_path, label: "Ask to be registered" %>
+
+    <%= render "shared/ui/tile",
+               title: "Something to say about the village?",
+               body: "Comments go to the village office and into the participation register for follow-up.",
+               url: have_your_say_path, label: "Have your say" %>
+  </div>
+</main>

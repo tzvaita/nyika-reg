@@ -20,6 +20,7 @@ class Household < ApplicationRecord
 
   belongs_to :captured_by, class_name: "User", optional: true
   belongs_to :verified_by, class_name: "User", optional: true
+  belongs_to :pin_issued_by, class_name: "User", optional: true
 
   has_many :people, dependent: :restrict_with_error
   has_many :consent_records, through: :people
@@ -34,10 +35,22 @@ class Household < ApplicationRecord
   # audit trail keeps someone to point at. The form marks them inactive instead.
   accepts_nested_attributes_for :people, allow_destroy: false
 
-  # The secret that lets this household open its own record without an account.
-  # It is a BEARER CREDENTIAL — anyone holding the link can edit this household —
-  # so it must be revocable. See #regenerate_token!.
+  # The link the office sends. Once a PIN exists this is a convenient DEEP LINK
+  # rather than a key: opening it asks for the PIN. Before a PIN exists it still
+  # opens the record on its own, so links already sent keep working.
   has_secure_token :token
+
+  # The credential proper. Issued by the office, never chosen from a phone
+  # number alone. validations: false because the format check below is ours and
+  # a household without a PIN yet is a valid record.
+  has_secure_password :pin, validations: false
+
+  PIN_FORMAT = /\A\d{6,10}\z/
+  MAX_PIN_ATTEMPTS = 5
+  PIN_LOCKOUT = 15.minutes
+
+  validates :pin, format: { with: PIN_FORMAT, message: "must be 6 to 10 digits" },
+                  allow_nil: true
 
   validates :name, presence: true
   validates :reference, presence: true, uniqueness: true
@@ -77,6 +90,58 @@ class Household < ApplicationRecord
   def regenerate_token!(reason: "Resident link regenerated")
     self.change_reason = reason
     regenerate_token
+  end
+
+  # --- PIN -----------------------------------------------------------------
+
+  def pin_set?
+    pin_digest.present?
+  end
+
+  def pin_locked?
+    pin_locked_until.present? && pin_locked_until > Time.current
+  end
+
+  # Generated rather than typed, so nobody issues 123456 across half the village.
+  # Returned in the clear ONCE for the registrar to write down; after this only
+  # the digest exists.
+  def issue_temporary_pin!(by:, reason: nil)
+    generated = SecureRandom.random_number(10**6).to_s.rjust(6, "0")
+
+    self.pin = generated
+    self.pin_temporary = true
+    self.pin_set_at = Time.current
+    self.pin_issued_by = by
+    self.pin_failed_attempts = 0
+    self.pin_locked_until = nil
+    self.change_reason = reason || "Temporary PIN issued"
+    save!
+
+    generated
+  end
+
+  # The household choosing their own, from inside a session they already hold.
+  def set_own_pin!(new_pin, reason: "PIN chosen by the household")
+    self.pin = new_pin
+    self.pin_temporary = false
+    self.pin_set_at = Time.current
+    self.change_reason = reason
+    save!
+  end
+
+  # Returns true only on a correct PIN for an unlocked household. Counting
+  # failures is the point: without it a six-digit PIN against a known number is
+  # a short afternoon's work.
+  def verify_pin(candidate)
+    return false if pin_locked? || !pin_set?
+
+    if authenticate_pin(candidate)
+      update_columns(pin_failed_attempts: 0, pin_locked_until: nil)
+      true
+    else
+      register_failed_pin_attempt
+      false
+    end
   end
 
   # Saves changes a resident made to their own record, and puts the household back
@@ -120,6 +185,12 @@ class Household < ApplicationRecord
   end
 
   private
+
+  def register_failed_pin_attempt
+    attempts = pin_failed_attempts + 1
+    locked_until = attempts >= MAX_PIN_ATTEMPTS ? PIN_LOCKOUT.from_now : nil
+    update_columns(pin_failed_attempts: attempts, pin_locked_until: locked_until)
+  end
 
   # Human-readable and safe to say out loud: NYK-2026-0001.
   def assign_reference

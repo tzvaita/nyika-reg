@@ -66,12 +66,12 @@
 
   <div class="space-y-3 pb-8">
     <%= f.submit submit_label,
-                 class: "w-full rounded-xl bg-nyika-ink px-4 py-4 text-base font-semibold text-white" %>
+                 class: "w-full rounded-xl bg-village px-4 py-4 text-base font-semibold text-white" %>
 
     <% if household.persisted? && household.draft? %>
       <%= f.submit "Save and send for verification",
                    name: "submit_for_verification",
-                   class: "w-full rounded-xl border-2 border-nyika-accent px-4 py-4 text-base font-semibold text-nyika-accent" %>
+                   class: "w-full rounded-xl border-2 border-gold px-4 py-4 text-base font-semibold text-village" %>
     <% end %>
   </div>
 <% end %>
