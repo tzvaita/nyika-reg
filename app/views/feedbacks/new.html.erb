@@ -1,0 +1,74 @@
+<% content_for :title, "Have Your Say — Nyika Village" %>
+
+<%= render "shared/ui/hero",
+           eyebrow: "For Nyika · By Nyika",
+           title: "Have Your Say.",
+           lead: "Tell the village office what is working, what is not, and what should change." %>
+
+<section class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
+  <div class="mx-auto max-w-2xl">
+    <%= render "shared/ui/card", title: "Send your comment" do %>
+      <p class="mt-2 text-sm text-muted">
+        You do not have to give your name. A comment that can only be made under
+        a name is not really an open channel — so leave the name blank if you
+        would rather.
+      </p>
+
+      <%= form_with model: @feedback, url: feedbacks_path, class: "mt-5 space-y-4" do |f| %>
+        <% if @feedback.errors.any? %>
+          <div class="rounded-lg bg-caution p-4 text-sm text-[#8a3d2e]">
+            <ul class="list-disc pl-5">
+              <% @feedback.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div>
+          <%= f.label :category, "What is this about?",
+                      class: "block text-sm font-semibold text-ink" %>
+          <%= f.select :category,
+                       Feedback.categories.keys.map { |c| [ c.humanize, c ] },
+                       {},
+                       class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+        </div>
+
+        <div>
+          <%= f.label :message, "Your comment", class: "block text-sm font-semibold text-ink" %>
+          <%= f.text_area :message, rows: 6,
+                          class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <%= f.label :name, "Your name (optional)",
+                        class: "block text-sm font-semibold text-ink" %>
+            <%= f.text_field :name,
+                             class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+          </div>
+          <div>
+            <%= f.label :contact_method, "How to reply (optional)",
+                        class: "block text-sm font-semibold text-ink" %>
+            <%= f.text_field :contact_method,
+                             class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+            <p class="mt-1 text-xs text-muted">Leave blank and we answer at a village meeting.</p>
+          </div>
+        </div>
+
+        <%# Honeypot: hidden from people, irresistible to bots. %>
+        <div class="hidden" aria-hidden="true">
+          <label for="website">Website</label>
+          <%= text_field_tag :website, nil, tabindex: -1, autocomplete: "off" %>
+        </div>
+
+        <%= f.submit "Send my comment",
+                     class: "w-full rounded-xl bg-village px-4 py-3.5 text-base font-semibold text-white" %>
+      <% end %>
+    <% end %>
+
+    <p class="mt-4 text-center text-xs text-muted">
+      Comments are read by the village office. Nothing you write here is published.
+    </p>
+  </div>
+</section>

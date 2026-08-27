@@ -1,4 +1,4 @@
-/* Styles for the resident-facing and assisted-capture pages.
+/* Styles for the public site and the resident-facing pages.
  *
  * Separate from active_admin.css because ActiveAdmin brings its own Tailwind
  * config and plugin. These pages are used on a phone, often outdoors on a slow
@@ -12,6 +12,35 @@
 @source "../../javascript";
 
 @theme {
-  --color-nyika-ink: #1e4b73;
-  --color-nyika-accent: #c2532a;
+  /* Deep green, cream and gold — a village identity rather than an
+   * administrative one. Names match the roles they play, not the colours
+   * themselves, so a later repaint changes one block. */
+  --color-village: #173f31;
+  --color-village-deep: #102f24;
+  --color-parchment: #f5f0e6;
+  --color-ink: #22312b;
+  --color-muted: #6c7771;
+  --color-rule: #dfd8cc;
+  --color-gold: #c8a65e;
+  --color-affirm: #e3f0e7;
+  --color-caution: #f3dfdb;
+
+  /* Georgia for headings: it ships on essentially every device, so the
+   * "tradition" note in the identity costs nothing to download. System sans
+   * for body text for the same reason — a web font is a slow first render on
+   * the handsets this is actually read on. */
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-sans: Arial, Helvetica, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-parchment);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
 }

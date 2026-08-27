@@ -16,14 +16,24 @@ class PublicController < ApplicationController
     @open_campaigns = MobilisationCampaign.live.order(:opens_on).limit(3)
   end
 
+  def about
+  end
+
+  def privacy
+  end
+
+  def contact
+  end
+
   def services
   end
 
-  def campaigns
+  def payments
     @open_campaigns = MobilisationCampaign.live.order(:opens_on)
     @closed_campaigns = MobilisationCampaign.where(status: :closed).order(closes_on: :desc).limit(5)
   end
 
-  def trust
+  def diaspora
+    @open_campaigns = MobilisationCampaign.live.order(:opens_on)
   end
 end

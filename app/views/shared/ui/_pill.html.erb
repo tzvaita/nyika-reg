@@ -1,0 +1,13 @@
+<%# Small status label. tone: :ok | :bad | :neutral | :gold %>
+<%
+  tones = {
+    ok: "bg-affirm text-village",
+    bad: "bg-caution text-[#8a3d2e]",
+    gold: "bg-gold/20 text-[#7a6023]",
+    neutral: "bg-rule/60 text-ink"
+  }
+%>
+<span class="inline-block rounded-full px-2.5 py-1 text-xs font-semibold
+             <%= tones[(local_assigns[:tone] || :neutral).to_sym] %>">
+  <%= label %>
+</span>

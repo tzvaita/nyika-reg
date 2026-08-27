@@ -1,0 +1,55 @@
+<% content_for :title, "About Nyika Village" %>
+
+<%= render "shared/ui/hero",
+           eyebrow: "About Nyika Village",
+           title: "Our place. Our people. Our story.",
+           lead: "Nyika is a village in Goromonzi District, Zimbabwe. This platform exists so the village can keep one trusted record of itself — and act on it." %>
+
+<section class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render "shared/ui/card", title: "Why a register" do %>
+      <p class="mt-2 text-muted">
+        Lists already exist — a household list, a school support list, drought
+        relief names, a receipt book. They are static, they disagree with each
+        other, and when someone asks a question the answer depends on whose
+        memory is trusted.
+      </p>
+      <p class="mt-3 text-muted">
+        One household record, kept current and checkable, replaces all of that.
+      </p>
+    <% end %>
+
+    <%= render "shared/ui/card", title: "What it is not" do %>
+      <p class="mt-2 text-muted">
+        It is not a bank, a land registry or a welfare authority. It does not
+        decide who receives government support and it does not record who owns
+        which land.
+      </p>
+      <p class="mt-3 text-muted">
+        It helps households apply, records what was decided, and keeps the money
+        side honest.
+      </p>
+    <% end %>
+  </div>
+
+  <div class="mt-8 grid gap-4 sm:grid-cols-3">
+    <%= render "shared/ui/stat", value: "One", caption: "household record, many programmes" %>
+    <%= render "shared/ui/stat", value: "Two", caption: "pairs of eyes on every verification" %>
+    <%= render "shared/ui/stat", value: "Every", caption: "change recorded with who and why" %>
+  </div>
+
+  <div class="mt-8">
+    <%= render "shared/ui/card", title: "Who runs it" do %>
+      <p class="mt-2 text-muted">
+        The village office. Different people there see different things — whoever
+        registers households cannot see who asked for welfare support, and
+        whoever runs support cases cannot see who contributed to a collection.
+        Nobody can join those two up.
+      </p>
+      <p class="mt-4">
+        <%= link_to "How we protect your details", privacy_path,
+                    class: "font-semibold text-village underline underline-offset-4" %>
+      </p>
+    <% end %>
+  </div>
+</section>

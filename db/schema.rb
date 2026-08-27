@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_205116) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_130429) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,6 +101,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_205116) do
     t.index ["household_id"], name: "index_conversations_on_household_id"
   end
 
+  create_table "feedbacks", force: :cascade do |t|
+    t.integer "category", default: 0, null: false
+    t.string "contact_method"
+    t.datetime "created_at", null: false
+    t.datetime "handled_at"
+    t.bigint "handled_by_id"
+    t.text "message", null: false
+    t.string "name"
+    t.text "response"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_feedbacks_on_category"
+    t.index ["handled_by_id"], name: "index_feedbacks_on_handled_by_id"
+    t.index ["status"], name: "index_feedbacks_on_status"
+  end
+
   create_table "households", force: :cascade do |t|
     t.integer "capture_source", default: 0, null: false
     t.bigint "captured_by_id"
@@ -109,6 +125,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_205116) do
     t.date "last_confirmed_on"
     t.text "location_description"
     t.string "name", null: false
+    t.string "pin_digest"
+    t.integer "pin_failed_attempts", default: 0, null: false
+    t.bigint "pin_issued_by_id"
+    t.datetime "pin_locked_until"
+    t.datetime "pin_set_at"
+    t.boolean "pin_temporary", default: false, null: false
     t.string "principal_contact"
     t.string "reference", null: false
     t.integer "status", default: 0, null: false
@@ -119,6 +141,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_205116) do
     t.index ["captured_by_id"], name: "index_households_on_captured_by_id"
     t.index ["contact_number"], name: "index_households_on_contact_number"
     t.index ["name", "location_description"], name: "index_households_on_name_and_location"
+    t.index ["pin_issued_by_id"], name: "index_households_on_pin_issued_by_id"
     t.index ["reference"], name: "index_households_on_reference", unique: true
     t.index ["status"], name: "index_households_on_status"
     t.index ["token"], name: "index_households_on_token", unique: true
@@ -480,7 +503,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_205116) do
   add_foreign_key "contributions", "mobilisation_campaigns"
   add_foreign_key "contributions", "users", column: "recorded_by_id"
   add_foreign_key "conversations", "households"
+  add_foreign_key "feedbacks", "users", column: "handled_by_id"
   add_foreign_key "households", "users", column: "captured_by_id"
+  add_foreign_key "households", "users", column: "pin_issued_by_id"
   add_foreign_key "households", "users", column: "verified_by_id"
   add_foreign_key "inbound_messages", "conversations"
   add_foreign_key "inbound_messages", "households"

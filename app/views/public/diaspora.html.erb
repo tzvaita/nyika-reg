@@ -1,0 +1,51 @@
+<% content_for :title, "Diaspora Contributions — Nyika Village" %>
+
+<%= render "shared/ui/hero",
+           eyebrow: "Diaspora Contributions",
+           title: "Support Nyika from anywhere.",
+           lead: "Give to a village collection from wherever you are, and see exactly what it raised." %>
+
+<section class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
+  <%= render "shared/ui/card", title: "How it works" do %>
+    <ol class="mt-3 list-decimal space-y-2 pl-5 text-muted">
+      <li>Choose the collection you want to support.</li>
+      <li>Create a reference — a short code that ties your payment to it.</li>
+      <li>Send your payment to the approved account shown, quoting that reference.</li>
+      <li>The village office confirms it against the receipt, and the total updates.</li>
+    </ol>
+    <p class="mt-4 text-sm text-muted">
+      Nothing is held here. The registry records and reconciles payments; it does
+      not take them.
+    </p>
+  <% end %>
+
+  <h2 class="mt-10 text-2xl text-village">Open collections</h2>
+
+  <% if @open_campaigns.any? %>
+    <div class="mt-5 grid gap-5 lg:grid-cols-2">
+      <% @open_campaigns.each do |campaign| %>
+        <%= render "public/campaign_card", campaign: campaign %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="mt-5">
+      <%= render "shared/ui/card" do %>
+        <p class="text-muted">No collections are open at the moment.</p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mt-8">
+    <%= render "shared/ui/card", title: "Giving from outside Zimbabwe" do %>
+      <p class="mt-2 text-muted">
+        Send through whichever remittance service you already use. What matters is
+        that the payment reaches the account named on the collection and carries
+        your reference — that is what lets the office match it and confirm it.
+      </p>
+      <p class="mt-3 text-muted">
+        If a payment cannot be matched it is held as an exception rather than
+        quietly absorbed, and the office follows it up.
+      </p>
+    <% end %>
+  </div>
+</section>

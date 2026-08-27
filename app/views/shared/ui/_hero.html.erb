@@ -1,0 +1,22 @@
+<%# The dark green band that opens most pages.
+    eyebrow: small caps line above the heading (their .ey)
+    title:   the heading
+    lead:    optional paragraph
+    Pass a block for buttons. %>
+<section class="bg-village text-white">
+  <div class="mx-auto w-[min(1080px,calc(100%-28px))] py-10 sm:py-14">
+    <% if local_assigns[:eyebrow].present? %>
+      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-gold"><%= eyebrow %></p>
+    <% end %>
+
+    <h1 class="mt-2 max-w-3xl text-3xl leading-tight sm:text-[2.6rem]"><%= title %></h1>
+
+    <% if local_assigns[:lead].present? %>
+      <p class="mt-4 max-w-2xl text-lg text-white/85"><%= lead %></p>
+    <% end %>
+
+    <% if block_given? %>
+      <div class="mt-7 flex flex-col gap-3 sm:flex-row"><%= yield %></div>
+    <% end %>
+  </div>
+</section>

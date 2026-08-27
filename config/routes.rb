@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   get   "h/:token", to: "household_updates#show",   as: :household_update
   patch "h/:token", to: "household_updates#update"
 
+  # The same pages, reached from a PIN session rather than a link.
+  get   "my-household", to: "household_updates#show",   as: :household_dashboard
+  patch "my-household", to: "household_updates#update"
+
   # The rest of the resident menu from the concept deck. Every page is scoped to
   # the household the token identifies.
   scope "h/:token", as: :resident do
@@ -37,9 +41,29 @@ Rails.application.routes.draw do
   # The public website. Shows what the platform does, the trust rules and live
   # campaign totals — and no personal data whatsoever.
   root "public#home"
+  get "about",    to: "public#about"
+  get "privacy",  to: "public#privacy"
+  get "contact",  to: "public#contact"
+  get "payments", to: "public#payments"
+  get "diaspora", to: "public#diaspora"
   get "services", to: "public#services"
-  get "campaigns", to: "public#campaigns"
-  get "trust",    to: "public#trust"
+
+  # Kept so older links and anything already shared still land somewhere.
+  get "campaigns", to: redirect("/payments")
+  get "trust",     to: redirect("/privacy")
+
+  # The resident front door: phone number plus the PIN the village office issued.
+  # There is deliberately no route here that sets or resets a PIN from a phone
+  # number alone.
+  get    "registry",         to: "resident/sessions#new",     as: :registry
+  post   "registry",         to: "resident/sessions#create"
+  delete "registry/signout", to: "resident/sessions#destroy", as: :registry_signout
+  get    "registry/pin",     to: "resident/pins#edit",        as: :change_pin
+  patch  "registry/pin",     to: "resident/pins#update"
+
+  # Have your say — public feedback.
+  get  "have-your-say", to: "feedbacks#new",    as: :have_your_say
+  post "have-your-say", to: "feedbacks#create", as: :feedbacks
 
   # The only place the public can write over the web. It creates a request for a
   # registrar to action, never a registry record. Written out rather than

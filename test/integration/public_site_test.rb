@@ -4,7 +4,10 @@ require "test_helper"
 # show, so that is tested against real seeded data rather than trusted to the
 # templates staying honest.
 class PublicSiteTest < ActionDispatch::IntegrationTest
-  PUBLIC_PAGES = %w[/ /services /campaigns /trust /register].freeze
+  # Every page a signed-out visitor can reach. New pages belong here: the leak
+  # test below is only as good as this list.
+  PUBLIC_PAGES = %w[/ /about /privacy /contact /payments /diaspora /services
+                    /register /registry /have-your-say].freeze
 
   setup do
     PaperTrail.request.whodunnit = users(:administrator).id.to_s
@@ -68,8 +71,8 @@ class PublicSiteTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the campaigns page shows the ledger without naming contributors" do
-    get "/campaigns"
+  test "the payments page shows the ledger without naming contributors" do
+    get "/payments"
 
     assert_response :success
     assert_match @campaign.name, response.body
@@ -82,8 +85,8 @@ class PublicSiteTest < ActionDispatch::IntegrationTest
     assert_no_match(/#{Regexp.escape(@household.name)}/, response.body)
   end
 
-  test "the campaigns page says plainly that contributors are not published" do
-    get "/campaigns"
+  test "the payments page says plainly that contributors are not published" do
+    get "/payments"
 
     assert_match(/never publish who gave/i, response.body)
   end
@@ -98,9 +101,18 @@ class PublicSiteTest < ActionDispatch::IntegrationTest
 
   test "the progress bar renders its real width server side" do
     # So it is correct with JavaScript off; the Stimulus controller only animates.
-    get "/campaigns"
+    get "/payments"
 
     assert_match(/style="width: #{@campaign.progress_percentage}%"/, response.body)
+  end
+
+  test "old links still land somewhere" do
+    # /campaigns and /trust were shared before the pages moved.
+    get "/campaigns"
+    assert_redirected_to "/payments"
+
+    get "/trust"
+    assert_redirected_to "/privacy"
   end
 
   test "no admin route is reachable without signing in" do

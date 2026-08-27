@@ -11,7 +11,7 @@
          data-progress-amount-value="<%= received %>"
          data-progress-prefix-value="<%= campaign.currency %> ">
   <div class="flex items-start justify-between gap-3">
-    <h3 class="font-bold text-nyika-ink"><%= campaign.name %></h3>
+    <h3 class="font-bold text-village"><%= campaign.name %></h3>
     <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium
                  <%= campaign.approved_obligation? ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900" %>">
       <%= campaign.approved_obligation? ? "Agreed" : "Voluntary" %>
@@ -25,7 +25,7 @@
   <% if campaign.target_amount.present? %>
     <div class="mt-5">
       <div class="flex items-baseline justify-between gap-2">
-        <p class="text-2xl font-bold text-nyika-ink" data-progress-target="amount">
+        <p class="text-2xl font-bold text-village" data-progress-target="amount">
           <%# Rendered server-side at the real figure, so with JavaScript off it
               is simply correct rather than animated. %>
           <%= campaign.currency %> <%= number_with_delimiter(received) %>
@@ -36,7 +36,7 @@
       </div>
 
       <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-        <div class="h-2.5 rounded-full bg-nyika-accent"
+        <div class="h-2.5 rounded-full bg-gold"
              data-progress-target="bar"
              style="width: <%= [ percent, 100 ].min %>%"></div>
       </div>
