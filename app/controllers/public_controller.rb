@@ -31,9 +31,13 @@ class PublicController < ApplicationController
   def payments
     @open_campaigns = MobilisationCampaign.live.order(:opens_on)
     @closed_campaigns = MobilisationCampaign.where(status: :closed).order(closes_on: :desc).limit(5)
+    @routes = Contribution::LOCAL_METHODS
+    @contribution = Contribution.new(origin: :local)
   end
 
   def diaspora
     @open_campaigns = MobilisationCampaign.live.order(:opens_on)
+    @routes = Contribution::DIASPORA_METHODS
+    @contribution = Contribution.new(origin: :diaspora)
   end
 end

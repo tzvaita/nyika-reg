@@ -81,11 +81,38 @@ ActiveAdmin.register Household do
       end
     end
 
+    panel "Household sign-in" do
+      attributes_table_for resource do
+        row("Signs in with") { |h| h.contact_number.presence || status_tag("no number on record", class: :warning) }
+        row("PIN") do |h|
+          if !h.pin_set?
+            status_tag("not issued — this household cannot sign in", class: :warning)
+          elsif h.pin_temporary?
+            status_tag("temporary — they must replace it on first sign-in", class: :warning)
+          else
+            status_tag("set by the household", class: :ok)
+          end
+        end
+        row("PIN issued by") { |h| h.pin_issued_by&.display_name }
+        row("Locked") do |h|
+          h.pin_locked? ? status_tag("locked until #{h.pin_locked_until.strftime('%H:%M')}", class: :error) : "no"
+        end
+      end
+      para "PINs are given out in person and never shown again. If a household " \
+           "forgets theirs, issue a new one — there is deliberately no way to " \
+           "reset a PIN from a phone number alone."
+    end
+
     panel "Resident link" do
       div do
-        para "Send this to the household so they can check and update their own "\
-             "details. It needs no password. Anyone holding it can edit this "\
-             "household, so send it only to them — and regenerate it if it goes astray."
+        if resource.pin_set?
+          para "Send this so the household can reach their own record quickly. " \
+               "Opening it asks for their PIN, so the link on its own is not " \
+               "enough to see anything — it fills in their number and no more."
+        else
+          para "This household has NO PIN yet, so this link opens their record on " \
+               "its own. Issue a PIN above to change that."
+        end
       end
       div style: "margin-top:0.75rem;font-family:monospace;word-break:break-all;" do
         household_update_url(token: resource.token, host: request.host_with_port)
@@ -173,6 +200,28 @@ ActiveAdmin.register Household do
     authorize! :submit_for_verification, resource
     resource.submit_for_verification!(reason: "Submitted from the registry workspace")
     redirect_to resource_path, notice: "Submitted for verification."
+  end
+
+  action_item :issue_pin, only: :show, if: -> { authorized?(:update, resource) } do
+    link_to(resource.pin_set? ? "Issue a new PIN" : "Issue a PIN",
+            issue_pin_admin_household_path(resource),
+            data: { turbo_method: :put,
+                    turbo_confirm: resource.pin_set? ?
+                      "Issue a new PIN? The household's current one stops working immediately." :
+                      "Generate a PIN for this household?" })
+  end
+
+  # The PIN is GENERATED rather than typed, so nobody issues 123456 across half
+  # the village, and it is shown ONCE for the registrar to write down and hand
+  # over. After this only the digest exists — the office cannot look it up again.
+  member_action :issue_pin, method: :put do
+    authorize! :update, resource
+    generated = resource.issue_temporary_pin!(by: current_user)
+
+    redirect_to resource_path,
+                notice: "PIN for #{resource.reference}: #{generated} — write it down and give " \
+                        "it to the household. It cannot be shown again, and they must " \
+                        "replace it when they first sign in."
   end
 
   # Revoking a leaked link. The token is a bearer credential, so this has to exist.

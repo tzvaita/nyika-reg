@@ -46,6 +46,10 @@ Rails.application.routes.draw do
   get "contact",  to: "public#contact"
   get "payments", to: "public#payments"
   get "diaspora", to: "public#diaspora"
+
+  # Creating a payment reference. No money moves — this is what lets the office
+  # match a payment that arrives to the collection it was meant for.
+  post "payment-references", to: "payment_references#create", as: :payment_references
   get "services", to: "public#services"
 
   # Kept so older links and anything already shared still land somewhere.

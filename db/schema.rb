@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_130429) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_133910) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,21 +66,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_130429) do
   create_table "contributions", force: :cascade do |t|
     t.decimal "amount", precision: 12, scale: 2
     t.integer "contribution_kind", default: 0, null: false
+    t.string "contributor_contact"
+    t.string "contributor_name"
+    t.string "contributor_number"
     t.datetime "created_at", null: false
     t.text "exception_note"
-    t.bigint "household_id", null: false
+    t.bigint "household_id"
     t.string "item_description"
     t.bigint "mobilisation_campaign_id", null: false
+    t.integer "origin", default: 0, null: false
     t.integer "payment_method"
     t.string "payment_reference"
     t.date "pledged_on", null: false
+    t.string "purpose_note"
     t.bigint "recorded_by_id"
     t.string "reference", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["contributor_number"], name: "index_contributions_on_contributor_number"
     t.index ["household_id"], name: "index_contributions_on_household_id"
     t.index ["mobilisation_campaign_id", "household_id"], name: "idx_on_mobilisation_campaign_id_household_id_7329a86ba0"
     t.index ["mobilisation_campaign_id"], name: "index_contributions_on_mobilisation_campaign_id"
+    t.index ["origin"], name: "index_contributions_on_origin"
     t.index ["payment_reference"], name: "index_contributions_on_payment_reference"
     t.index ["recorded_by_id"], name: "index_contributions_on_recorded_by_id"
     t.index ["reference"], name: "index_contributions_on_reference", unique: true

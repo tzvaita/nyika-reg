@@ -1,0 +1,58 @@
+<%# Their payForm(): fund, amount, contributor name, mobile, route, optional
+    purpose. Shared by the local and diaspora pages, which differ only in which
+    routes they offer. %>
+<%= form_with model: contribution, url: payment_references_path, class: "mt-4 space-y-4" do |f| %>
+  <%= f.hidden_field :origin %>
+
+  <div>
+    <%= f.label :mobilisation_campaign_id, "Fund / purpose",
+                class: "block text-sm font-semibold text-ink" %>
+    <%= f.select :mobilisation_campaign_id,
+                 campaigns.map { |c| [ c.name, c.id ] },
+                 { include_blank: "Choose a fund" },
+                 class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= f.label :amount, "Amount USD", class: "block text-sm font-semibold text-ink" %>
+      <%= f.text_field :amount, inputmode: "decimal",
+                       class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+    </div>
+    <div>
+      <%= f.label :payment_method, "Payment route", class: "block text-sm font-semibold text-ink" %>
+      <%= f.select :payment_method,
+                   routes.map { |r| [ r.humanize, r ] }, {},
+                   class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= f.label :contributor_name, "Contributor name",
+                  class: "block text-sm font-semibold text-ink" %>
+      <%= f.text_field :contributor_name, autocomplete: "name",
+                       class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+    </div>
+    <div>
+      <%= f.label :contributor_contact, "Mobile number",
+                  class: "block text-sm font-semibold text-ink" %>
+      <%= f.text_field :contributor_contact, type: "tel", inputmode: "tel",
+                       class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+      <p class="mt-1 text-xs text-muted">
+        If this number is on the register, the payment shows on your household's
+        own receipts.
+      </p>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :purpose_note, "Specific purpose, optional",
+                class: "block text-sm font-semibold text-ink" %>
+    <%= f.text_field :purpose_note,
+                     class: "mt-1 w-full rounded-lg border border-rule px-3 py-3 text-base" %>
+  </div>
+
+  <%= f.submit "Create reference",
+               class: "w-full rounded-lg bg-village px-4 py-3.5 text-base font-semibold text-white sm:w-auto" %>
+<% end %>

@@ -1,53 +1,38 @@
 <% content_for :title, "Contact Nyika" %>
 
-<%= render "shared/ui/hero",
-           eyebrow: "Contact Nyika",
-           title: "Speak to the village office",
-           lead: "For anything this site cannot do — and for anything about your own household." %>
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <h1 class="text-3xl text-village sm:text-4xl">Contact Nyika</h1>
 
-<section class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
-  <div class="grid gap-4 sm:grid-cols-2">
-    <%= render "shared/ui/card", title: "Nyika Village Office" do %>
-      <p class="mt-2 text-muted">Goromonzi District, Zimbabwe.</p>
-      <p class="mt-1 text-muted">Open weekday mornings.</p>
-      <p class="mt-4 text-sm text-muted">
-        The office keeps these details current. If they are wrong, tell whoever
-        you next speak to.
-      </p>
-    <% end %>
+  <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <%= render "shared/ui/tile",
+               title: "WhatsApp",
+               body: "Resident updates, assistance, payment instructions and Registry enquiries.",
+               url: registry_whatsapp_url, label: "Open WhatsApp", external: true %>
 
-    <%= render "shared/ui/card", title: "What to come in for" do %>
-      <ul class="mt-2 list-disc space-y-1.5 pl-5 text-muted">
-        <li>Registering a household for the first time</li>
-        <li>Getting or resetting your Village PIN</li>
-        <li>Adding or removing a member of your household</li>
-        <li>Changing what you have agreed to, or withdrawing it</li>
-        <li>A payment that has not been confirmed</li>
-        <li>Anything recorded about you that is wrong</li>
-      </ul>
-    <% end %>
+    <%= render "shared/ui/tile",
+               title: "SMS",
+               body: "Residents without WhatsApp can use SMS.",
+               url: registry_sms_url, label: "Open SMS" %>
+
+    <%= render "shared/ui/tile",
+               title: "Call / assisted capture",
+               body: "Residents can call or have information captured by an authorised Registry officer.",
+               url: registry_tel_url, label: "Call Registry" %>
   </div>
 
-  <div class="mt-4 grid gap-4 sm:grid-cols-2">
-    <%= render "shared/ui/card", title: "Not registered yet?" do %>
-      <p class="mt-2 text-muted">
-        Leave your name and how to reach you, and someone will come and see you.
-      </p>
-      <p class="mt-4">
-        <%= link_to "Ask to be registered", new_registration_request_path,
-                    class: "inline-block rounded-xl bg-gold px-5 py-3 font-semibold text-village" %>
-      </p>
-    <% end %>
+  <%= render "shared/ui/promise", heading: "Registry number" do %>
+    <p><%= registry_number %></p>
+  <% end %>
 
-    <%= render "shared/ui/card", title: "Something to say about the village?" do %>
-      <p class="mt-2 text-muted">
-        Comments go to the village office. You can leave one without giving your
-        name.
-      </p>
-      <p class="mt-4">
-        <%= link_to "Have your say", have_your_say_path,
-                    class: "inline-block rounded-xl border border-village px-5 py-3 font-semibold text-village" %>
-      </p>
-    <% end %>
+  <div class="mt-8 grid gap-3 sm:grid-cols-2">
+    <%= render "shared/ui/tile",
+               title: "Not registered yet?",
+               body: "Leave your name and how to reach you, and someone will come and see you. Nothing about your household is recorded until you have spoken to someone and agreed to it.",
+               url: new_registration_request_path, label: "Ask to be registered" %>
+
+    <%= render "shared/ui/tile",
+               title: "Something to say about the village?",
+               body: "Comments go to the village office and into the participation register for follow-up.",
+               url: have_your_say_path, label: "Have your say" %>
   </div>
-</section>
+</main>

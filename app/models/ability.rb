@@ -32,6 +32,11 @@ class Ability
     # so it is not for browsing.
     can :read, RegistrationRequest
 
+    # Comments from the village. Readable by everyone signed in: the point of an
+    # open channel is that what people say reaches the office, not that it is
+    # kept from most of it.
+    can :read, Feedback
+
     can :read, PaperTrail::Version
     # ActiveAdmin authorises its own pages (the Dashboard is one), so without this
     # every role is denied the landing page.
@@ -119,6 +124,7 @@ class Ability
     can :verify_receipt, Receipt
 
     can :update, RegistrationRequest
+    can :update, Feedback
   end
 
   # Owns programme casework. Read-only on the registry itself: a programme
@@ -162,6 +168,7 @@ class Ability
     # Same principle on the money side: can administer the records, cannot
     # confirm that money arrived or sign off where it goes.
     can [ :create, :update ], [ MobilisationCampaign, Contribution, Receipt ]
+    can :update, Feedback
     cannot [ :approve_account, :open_campaign ], MobilisationCampaign
     cannot :verify_receipt, Receipt
     cannot :reconcile, Contribution

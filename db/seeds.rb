@@ -295,3 +295,59 @@ if RegistrationRequest.none?
 
   puts "Seeded #{RegistrationRequest.count} registration requests."
 end
+
+# ---------------------------------------------------------------------------
+# Village PINs for the demo households.
+#
+# In real use a registrar issues these in person and writes them down. Seeds set
+# known ones so the demo can be signed into, and prints them for the same reason.
+# ---------------------------------------------------------------------------
+if registrar
+  demo_pins = {
+    "Moyo homestead" => "246810",
+    "Ncube homestead" => "135791"
+  }
+
+  demo_pins.each do |household_name, pin|
+    household = Household.find_by(name: household_name)
+    next if household.nil? || household.pin_set?
+
+    household.audit_source_channel = "seed"
+    household.update!(pin: pin, pin_temporary: false, pin_set_at: Time.current,
+                      pin_issued_by: registrar, change_reason: "Demo PIN")
+    puts "  #{household.reference} #{household.contact_number} PIN #{pin}"
+  end
+end
+
+# ---------------------------------------------------------------------------
+# A diaspora contribution and a couple of comments, so those pages and queues
+# are not empty in the demo.
+# ---------------------------------------------------------------------------
+campaign = MobilisationCampaign.live.first
+
+if campaign && Contribution.from_diaspora.none?
+  Contribution.create!(
+    mobilisation_campaign: campaign,
+    contribution_kind: :money, amount: 150,
+    origin: :diaspora, payment_method: :worldremit,
+    contributor_name: "Tsitsi Marimo (London)",
+    contributor_contact: "+447700900123",
+    change_reason: "Demo data", audit_source_channel: "seed"
+  )
+  puts "Seeded 1 diaspora contribution."
+end
+
+if Feedback.none?
+  [
+    { name: "Sekuru Moyo", contact: "0771234567", category: :village_services,
+      message: "The borehole pump has been broken for two weeks. Several households are walking to the river." },
+    { name: nil, contact: nil, category: :the_register,
+      message: "Please explain at the next meeting what happens to our details if the platform stops being used." }
+  ].each do |spec|
+    Feedback.create!(name: spec[:name], contact_method: spec[:contact],
+                     category: spec[:category], message: spec[:message],
+                     change_reason: "Demo data", audit_source_channel: "seed")
+  end
+
+  puts "Seeded #{Feedback.count} comments (one anonymous)."
+end

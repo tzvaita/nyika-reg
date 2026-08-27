@@ -5,65 +5,71 @@
            title: "One village. One digital front door.",
            lead: "Resident services, community mobilisation, heritage, diaspora support and village development in one connected platform." do %>
   <%= link_to "My Household", registry_path,
-              class: "rounded-xl bg-gold px-6 py-4 text-center text-base font-semibold text-village" %>
-  <%= link_to "Register my household", new_registration_request_path,
-              class: "rounded-xl border border-white/30 px-6 py-4 text-center text-base font-semibold text-white hover:bg-white/10" %>
+              class: "rounded-lg bg-gold px-5 py-3 text-center font-semibold text-village" %>
+  <%= link_to "Pay / Contribute", payments_path,
+              class: "rounded-lg bg-gold px-5 py-3 text-center font-semibold text-village" %>
+  <%= link_to "About Nyika", about_path,
+              class: "rounded-lg border border-white/35 px-5 py-3 text-center font-semibold text-white hover:bg-white/10" %>
 <% end %>
 
-<section class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
-  <div class="grid gap-4 sm:grid-cols-3">
-    <%= render "shared/ui/card", title: "Register once" do %>
-      <p class="mt-2 text-sm text-muted">
-        One household record for the whole village, so a family tells its story
-        once instead of starting again for every programme.
-      </p>
-    <% end %>
-    <%= render "shared/ui/card", title: "Access programmes" do %>
-      <p class="mt-2 text-sm text-muted">
-        Ask to be considered for government support, see what evidence is needed,
-        and follow what the programme office decides.
-      </p>
-    <% end %>
-    <%= render "shared/ui/card", title: "Mobilise transparently" do %>
-      <p class="mt-2 text-sm text-muted">
-        Community collections with a target, an approved account, receipts and
-        totals anyone in the village can check.
-      </p>
-    <% end %>
+<main class="mx-auto w-[min(1080px,calc(100%-28px))] py-10">
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <%= render "shared/ui/tile",
+               tag: "LIVE",
+               title: "Registry & Services",
+               body: "Private household access using registered mobile number and Village PIN.",
+               url: registry_path, label: "Open Registry" %>
+
+    <%= render "shared/ui/tile",
+               tag: "LIVE",
+               title: "Have Your Say",
+               body: "Share a comment, suggestion or village issue directly with the Nyika team.",
+               url: have_your_say_path, label: "Open Form" %>
+
+    <%= render "shared/ui/tile",
+               tag: "LIVE",
+               title: "Payments & Community Funds",
+               body: "Traceable local collections with reconciliation before public disclosure.",
+               url: payments_path, label: "Local Payments" %>
+
+    <%= render "shared/ui/tile",
+               tag: "LIVE",
+               title: "Diaspora Contributions",
+               body: "Mukuru, WorldRemit and international transfer routes linked to a Nyika reference.",
+               url: diaspora_path, label: "Open Diaspora" %>
+
+    <%= render "shared/ui/tile",
+               title: "About Nyika Village",
+               body: "Community, heritage, traditional life and a verified living village archive.",
+               url: about_path, label: "Our Story" %>
+
+    <%= render "shared/ui/tile",
+               title: "Personal Privacy",
+               body: "How household information is protected and separated from public statistics.",
+               url: privacy_path, label: "Privacy & Consent" %>
+
+    <%# The two village properties that live outside this application. %>
+    <%= render "shared/ui/tile",
+               title: "Our Daily Lives",
+               body: "Community photos, short videos and everyday village stories.",
+               url: "https://nyika-inauguration.vercel.app/daily-lives/",
+               label: "Open Daily Lives", external: true %>
+
+    <%= render "shared/ui/tile",
+               title: "Build Nyika",
+               body: "Community Centre mobilisation and project progress.",
+               url: "https://nyika-build-mvp.vercel.app",
+               label: "Open Build Nyika", external: true %>
+
+    <%= render "shared/ui/tile",
+               title: "Contact Us",
+               body: "WhatsApp, SMS, call or assisted capture.",
+               url: contact_path, label: "Contact Nyika" %>
   </div>
-</section>
 
-<% if @open_campaigns.any? %>
-  <section class="border-y border-rule bg-white">
-    <div class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
-      <div class="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 class="text-2xl text-village">Open right now</h2>
-          <p class="mt-1 text-muted">Live totals, not a report written afterwards.</p>
-        </div>
-        <%= link_to "See all", payments_path,
-                    class: "text-sm font-semibold text-village underline underline-offset-4" %>
-      </div>
-
-      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <% @open_campaigns.each do |campaign| %>
-          <%= render "public/campaign_card", campaign: campaign, compact: true %>
-        <% end %>
-      </div>
-    </div>
-  </section>
-<% end %>
-
-<section class="mx-auto w-[min(1080px,calc(100%-28px))] py-12">
-  <%= render "shared/ui/card", title: "Your details stay yours" do %>
-    <p class="mt-2 max-w-2xl text-muted">
-      We ask for as little as possible, you agree to each use separately, and
-      every change is recorded with who made it and why. Nothing is quietly
-      deleted, and personal information is never sold.
-    </p>
-    <p class="mt-4">
-      <%= link_to "How we protect your details", privacy_path,
-                  class: "font-semibold text-village underline underline-offset-4" %>
-    </p>
+  <%= render "shared/ui/notice" do %>
+    <b>Registry:</b> <%= registry_number %> ·
+    <%= link_to "Administrator", new_user_session_path,
+                class: "font-semibold text-village underline underline-offset-2" %>
   <% end %>
-</section>
+</main>
