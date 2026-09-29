@@ -66,7 +66,7 @@ end
 # Authentication for registrar/admin users
 gem "devise"
 # Admin & registrar workspace (capture + verification queues)
-gem "activeadmin", "4.0.0.beta22"
+gem "activeadmin", "4.0.0.beta23"
 # Immutable audit trail on sensitive records
 gem "paper_trail"
 # Role-based access via a central Ability class
